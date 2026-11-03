@@ -50,6 +50,7 @@ canvas{display:block;background:#050508;border:1px solid #222;border-radius:6px;
     <button id="micBtn">🎤 MIC</button>
     <label><button type="button" onclick="document.getElementById('fileInput').click()">📁 FILE</button><input type="file" id="fileInput" accept="audio/*" style="display:none"></label>
     <button id="recBtn">● REC</button>
+    <button id="testBtn">▶ TEST</button>
     <button id="clearBtn">CLEAR</button>
     <button id="quantBtn">QUANT</button>
     <button id="playBtn">▶ PLAY</button>
@@ -81,7 +82,7 @@ canvas{display:block;background:#050508;border:1px solid #222;border-radius:6px;
     <div><div class="monitor-label">WAVEFORM</div><canvas id="waveCanvas"></canvas></div>
   </div>
   <div class="tab-display" id="tabOutput">Ready. Record a clear single-note line. Quantize. Edit on the timeline. Lock position. Export MIDI or tab.</div>
-  <p class="note-hint">Monophonic: it tracks the strongest single pitch, best on clear leads and solos. The ROOT box is just that note's root, not a detected chord — a real chord needs more than one pitch at once. Transpose shifts live input and captured notes. Capo now applies to tab, playback, and MIDI. Your last capture is saved on this device and restored on reload.</p>
+  <p class="note-hint">Monophonic: it tracks the strongest single pitch, best on clear leads and solos. The ROOT box is just that note's root, not a detected chord — a real chord needs more than one pitch at once. Transpose shifts live input and captured notes. Capo now applies to tab, playback, and MIDI. Your last capture is saved on this device and restored on reload. TEST needs no file download: it plays E2 A2 D3 G3 B3 E4 G3 E2 inside the app and captures them, so the tab should read that order.</p>
 </div>
 <script>
 const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
@@ -98,7 +99,7 @@ let lastCorr=null, lastPeak=0, playbackNodes=[];
 let recordingStart=0;
 let dragIndex=-1, dragStartT=0, dragOrigStart=0;
 
-const els={mic:document.getElementById('micBtn'),rec:document.getElementById('recBtn'),clear:document.getElementById('clearBtn'),quant:document.getElementById('quantBtn'),play:document.getElementById('playBtn'),loop:document.getElementById('loopBtn'),speed:document.getElementById('speed'),tuning:document.getElementById('tuning'),capo:document.getElementById('capo'),lock:document.getElementById('lockBtn'),exportMidi:document.getElementById('exportMidi'),exportTab:document.getElementById('exportTab'),note:document.getElementById('noteDisplay'),freq:document.getElementById('freqDisplay'),clarity:document.getElementById('clarityDisplay'),tempo:document.getElementById('tempoDisplay'),chord:document.getElementById('chordDisplay'),status:document.getElementById('statusDisplay'),tab:document.getElementById('tabOutput'),file:document.getElementById('fileInput'),transDown:document.getElementById('transDown'),transUp:document.getElementById('transUp'),transVal:document.getElementById('transVal')};
+const els={mic:document.getElementById('micBtn'),rec:document.getElementById('recBtn'),test:document.getElementById('testBtn'),clear:document.getElementById('clearBtn'),quant:document.getElementById('quantBtn'),play:document.getElementById('playBtn'),loop:document.getElementById('loopBtn'),speed:document.getElementById('speed'),tuning:document.getElementById('tuning'),capo:document.getElementById('capo'),lock:document.getElementById('lockBtn'),exportMidi:document.getElementById('exportMidi'),exportTab:document.getElementById('exportTab'),note:document.getElementById('noteDisplay'),freq:document.getElementById('freqDisplay'),clarity:document.getElementById('clarityDisplay'),tempo:document.getElementById('tempoDisplay'),chord:document.getElementById('chordDisplay'),status:document.getElementById('statusDisplay'),tab:document.getElementById('tabOutput'),file:document.getElementById('fileInput'),transDown:document.getElementById('transDown'),transUp:document.getElementById('transUp'),transVal:document.getElementById('transVal')};
 const fretC=document.getElementById('fretCanvas'), timeC=document.getElementById('timelineCanvas'), waveC=document.getElementById('waveCanvas'), corrC=document.getElementById('corrCanvas'), metC=document.getElementById('metricsCanvas');
 const fctx=fretC.getContext('2d'), tctx=timeC.getContext('2d'), wctx=waveC.getContext('2d'), cctx=corrC.getContext('2d'), mctx=metC.getContext('2d');
 
@@ -127,6 +128,7 @@ els.rec.onclick=()=>{
   else estimateTempo();
 };
 els.file.onchange=handleFile;
+els.test.onclick=runTestTones;
 els.mic.onclick=toggleMic;
 
 function autoCorrelate(buf,sr){
@@ -339,6 +341,46 @@ function exportMIDI(){
   els.status.textContent='midi downloaded';
 }
 
+function runTestTones(){
+  // Built-in self-test: no file download needed. Synthesizes the same
+  // E2 A2 D3 G3 B3 E4 G3 E2 sequence used for the file test, feeds it
+  // through the analyser exactly like a FILE upload, and captures it.
+  stop();
+  try{
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const sr=audioCtx.sampleRate;
+    const testFreqs=[82.41,110,146.83,196,246.94,329.63,196,82.41];
+    const totalSec=testFreqs.length*0.75;
+    const testBuf=audioCtx.createBuffer(1,Math.floor(sr*totalSec),sr);
+    const data=testBuf.getChannelData(0);
+    testFreqs.forEach((freq,idx)=>{
+      const startSample=Math.floor(idx*0.75*sr);
+      const toneSamples=Math.floor(0.6*sr);
+      for(let i=0;i<toneSamples;i++){
+        const fade=Math.min(1,i/(sr*0.01),(toneSamples-i)/(sr*0.01));
+        data[startSample+i]=0.5*fade*Math.sin(2*Math.PI*freq*i/sr);
+      }
+    });
+    bufferSource=audioCtx.createBufferSource(); bufferSource.buffer=testBuf;
+    analyser=audioCtx.createAnalyser(); analyser.fftSize=2048;
+    bufferSource.connect(analyser); bufferSource.connect(audioCtx.destination);
+    notes=[]; selected=-1; onsets=[]; lastStable=null; stableCount=0; prevRms=0;
+    bufferSource.start(0);
+    isListening=true; isRecording=true; recordingStart=performance.now();
+    els.rec.classList.add('active'); els.rec.textContent='■ STOP';
+    els.test.classList.add('active');
+    els.status.textContent='test tones playing - expected E2 A2 D3 G3 B3 E4 G3 E2';
+    loop();
+    bufferSource.onended=()=>{
+      isListening=false; isRecording=false;
+      els.rec.classList.remove('active'); els.rec.textContent='● REC';
+      els.test.classList.remove('active');
+      estimateTempo();
+      els.status.textContent='test done - tab should read E2 A2 D3 G3 B3 E4 G3 E2';
+      render();
+    };
+  }catch(err){els.status.textContent='test failed';}
+}
 async function toggleMic(){
   if(isListening&&stream){stop(); return;}
   try{
