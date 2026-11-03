@@ -6,149 +6,33 @@
 <title>NEXUS · FRET TRACE</title>
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
-<link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
-<link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FRET TRACE">
 <style>
-:root {
-  --neon-g: #00ff87;
-  --neon-c: #60efff;
-  --neon-p: #ff0080;
-  --neon-y: #ffcc00;
-  --bg: #0a0a0f;
-  --panel: #111118;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  background: var(--bg);
-  color: #e0e0e0;
-  font-family: 'Courier New', Consolas, monospace;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-.nexus-stamp {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid #222;
-  background: linear-gradient(90deg, #0a0a0f 0%, #111 100%);
-}
-.nexus-stamp h1 {
-  font-size: 28px;
-  color: var(--neon-g);
-  text-shadow: 0 0 12px var(--neon-g);
-  letter-spacing: 2px;
-  margin: 0;
-}
-.nexus-stamp p {
-  font-size: 11px;
-  color: var(--neon-c);
-  letter-spacing: 1px;
-  margin: 0;
-}
-.nexus-chip {
-  font-size: 10px;
-  color: var(--neon-y);
-  background: #1a1a22;
-  padding: 2px 6px;
-  border-radius: 4px;
-  display: inline-block;
-  margin-bottom: 4px;
-}
-.app { padding: 12px; max-width: 1200px; margin: 0 auto; }
-h2 {
-  color: var(--neon-c);
-  text-shadow: 0 0 8px var(--neon-c);
-  font-size: 18px;
-  margin: 8px 0 12px;
-  letter-spacing: 1px;
-}
-.controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
-  align-items: center;
-}
-button, select, input[type=file] {
-  background: #1a1a22;
-  color: var(--neon-g);
-  border: 1px solid var(--neon-g);
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-family: inherit;
-  font-size: 13px;
-  cursor: pointer;
-  box-shadow: 0 0 6px rgba(0,255,135,0.3);
-  transition: all 0.15s;
-}
-button:hover, select:hover { box-shadow: 0 0 12px var(--neon-g); background: #222; }
-button.active { background: var(--neon-p); color: #fff; border-color: var(--neon-p); box-shadow: 0 0 12px var(--neon-p); }
-.live-info {
-  background: var(--panel);
-  border: 1px solid #333;
-  padding: 8px 12px;
-  border-radius: 6px;
-  margin-bottom: 12px;
-  font-size: 14px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-.live-info span { color: var(--neon-y); }
-canvas {
-  display: block;
-  background: #050508;
-  border: 1px solid #222;
-  border-radius: 6px;
-  margin-bottom: 12px;
-  width: 100%;
-  box-shadow: 0 0 20px rgba(0,255,135,0.1);
-}
-#fretCanvas { height: 180px; }
-#waveCanvas { height: 80px; }
-#corrCanvas { height: 100px; }
-.monitors {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-@media (max-width: 700px) {
-  .monitors { grid-template-columns: 1fr; }
-}
-.monitor-label {
-  font-size: 10px;
-  color: var(--neon-c);
-  letter-spacing: 1px;
-  margin-bottom: 2px;
-  text-transform: uppercase;
-}
-.tab-display {
-  background: #050508;
-  border: 1px solid var(--neon-c);
-  border-radius: 6px;
-  padding: 12px;
-  font-family: 'Courier New', monospace;
-  font-size: 13px;
-  line-height: 1.4;
-  white-space: pre;
-  overflow-x: auto;
-  min-height: 120px;
-  color: var(--neon-g);
-  text-shadow: 0 0 4px var(--neon-g);
-  margin-bottom: 12px;
-}
-.note-hint { font-size: 11px; color: #888; margin-top: 4px; }
-@media (max-width: 600px) {
-  .controls { gap: 6px; }
-  button, select { padding: 6px 8px; font-size: 12px; }
-  h2 { font-size: 16px; }
-}
+:root { --neon-g:#00ff87; --neon-c:#60efff; --neon-p:#ff0080; --neon-y:#ffcc00; --bg:#0a0a0f; --panel:#111118; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:#e0e0e0;font-family:'Courier New',Consolas,monospace;min-height:100vh;overflow-x:hidden}
+.nexus-stamp{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #222;background:linear-gradient(90deg,#0a0a0f,#111)}
+.nexus-stamp h1{font-size:28px;color:var(--neon-g);text-shadow:0 0 12px var(--neon-g);letter-spacing:2px;margin:0}
+.nexus-stamp p{font-size:11px;color:var(--neon-c);letter-spacing:1px}
+.nexus-chip{font-size:10px;color:var(--neon-y);background:#1a1a22;padding:2px 6px;border-radius:4px;display:inline-block;margin-bottom:4px}
+.app{padding:12px;max-width:1280px;margin:0 auto}
+h2{color:var(--neon-c);text-shadow:0 0 8px var(--neon-c);font-size:18px;margin:8px 0 12px;letter-spacing:1px}
+.controls{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center}
+button,select,input{background:#1a1a22;color:var(--neon-g);border:1px solid var(--neon-g);padding:6px 10px;border-radius:4px;font-family:inherit;font-size:12px;cursor:pointer;box-shadow:0 0 6px rgba(0,255,135,.3)}
+button.active{background:var(--neon-p);color:#fff;border-color:var(--neon-p)}
+.live-info{background:var(--panel);border:1px solid #333;padding:6px 10px;border-radius:6px;margin-bottom:10px;font-size:13px;display:flex;flex-wrap:wrap;gap:12px}
+.live-info span{color:var(--neon-y)}
+canvas{display:block;background:#050508;border:1px solid #222;border-radius:6px;margin-bottom:8px;width:100%;box-shadow:0 0 16px rgba(0,255,135,.08)}
+#fretCanvas{height:160px}
+#timelineCanvas{height:140px;cursor:crosshair}
+#waveCanvas,#corrCanvas,#metricsCanvas{height:70px}
+.monitors{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px}
+@media(max-width:800px){.monitors{grid-template-columns:1fr}}
+.monitor-label{font-size:9px;color:var(--neon-c);letter-spacing:1px;margin-bottom:2px;text-transform:uppercase}
+.tab-display{background:#050508;border:1px solid var(--neon-c);border-radius:6px;padding:10px;font-family:monospace;font-size:12px;line-height:1.35;white-space:pre;overflow-x:auto;min-height:100px;color:var(--neon-g);text-shadow:0 0 4px var(--neon-g);margin-bottom:8px}
+.note-hint{font-size:10px;color:#777;margin-top:4px}
+.row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;align-items:center}
 </style>
 </head>
 <body>
@@ -158,542 +42,335 @@ canvas {
     <h1>NEXUS</h1>
     <p>NExtended Xperimental USers</p>
   </div>
-  <svg width="56" height="56" viewBox="0 0 64 64" aria-label="NEXUS sigil">
-    <rect width="64" height="64" rx="14" fill="#0a0a0f" stroke="#00ff87" stroke-width="1.5"/>
-    <circle cx="32" cy="32" r="19" fill="none" stroke="#60efff" stroke-width="1.2"/>
-    <path d="M20 42 L32 14 L44 42 M25.5 32 H38.5" fill="none" stroke="#00ff87" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="32" cy="32" r="3.2" fill="#ff0080"/>
-  </svg>
+  <svg width="56" height="56" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#0a0a0f" stroke="#00ff87" stroke-width="1.5"/><circle cx="32" cy="32" r="19" fill="none" stroke="#60efff" stroke-width="1.2"/><path d="M20 42 L32 14 L44 42 M25.5 32 H38.5" fill="none" stroke="#00ff87" stroke-width="2.6" stroke-linecap="round"/><circle cx="32" cy="32" r="3.2" fill="#ff0080"/></svg>
 </header>
-
 <div class="app">
-  <h2>FRET TRACE · Live Line → Guitar Tab</h2>
+  <h2>FRET TRACE · Capture · Time · Edit · Play</h2>
   <div class="controls">
     <button id="micBtn">🎤 MIC</button>
-    <label style="cursor:pointer;">
-      <button type="button" onclick="document.getElementById('fileInput').click()">📁 FILE</button>
-      <input type="file" id="fileInput" accept="audio/*" style="display:none">
-    </label>
-    <button id="recBtn">● RECORD</button>
+    <label><button type="button" onclick="document.getElementById('fileInput').click()">📁 FILE</button><input type="file" id="fileInput" accept="audio/*" style="display:none"></label>
+    <button id="recBtn">● REC</button>
     <button id="clearBtn">CLEAR</button>
+    <button id="quantBtn">QUANT</button>
+    <button id="playBtn">▶ PLAY</button>
+    <button id="loopBtn">LOOP</button>
+    <select id="speed"><option value="1">1.0x</option><option value="0.75">0.75x</option><option value="0.5">0.5x</option></select>
     <button id="transDown">−</button>
     <span id="transVal" style="min-width:24px;text-align:center;color:var(--neon-y);">0</span>
     <button id="transUp">+</button>
-    <select id="tuning">
-      <option value="standard">Standard EADGBE</option>
-      <option value="dropd">Drop D</option>
-      <option value="dadgad">DADGAD</option>
-      <option value="openG">Open G</option>
-    </select>
+    <select id="tuning"><option value="standard">Std EADGBE</option><option value="dropd">Drop D</option><option value="dadgad">DADGAD</option><option value="openG">Open G</option></select>
+    <label style="font-size:11px;color:#aaa">Capo <input id="capo" type="number" min="0" max="12" value="0" style="width:40px"></label>
+    <button id="lockBtn">LOCK POS</button>
+    <button id="exportMidi">MIDI</button>
+    <button id="exportTab">COPY TAB</button>
   </div>
   <div class="live-info">
     <div>NOTE <span id="noteDisplay">—</span></div>
-    <div>FREQ <span id="freqDisplay">—</span> Hz</div>
+    <div>FREQ <span id="freqDisplay">—</span></div>
     <div>CLARITY <span id="clarityDisplay">—</span></div>
+    <div>TEMPO <span id="tempoDisplay">—</span></div>
+    <div>ROOT <span id="chordDisplay">—</span></div>
     <div>STATUS <span id="statusDisplay">idle</span></div>
   </div>
   <canvas id="fretCanvas"></canvas>
-  <canvas id="waveCanvas"></canvas>
+  <div class="monitor-label">TIMELINE · CLICK SELECT · DRAG TO MOVE IN TIME · WHEEL PITCH · RIGHT-CLICK DELETE</div>
+  <canvas id="timelineCanvas"></canvas>
   <div class="monitors">
-    <div>
-      <div class="monitor-label">AUTOCORRELATION · LAG PEAK</div>
-      <canvas id="corrCanvas"></canvas>
-    </div>
-    <div>
-      <div class="monitor-label">SIGNAL METRICS</div>
-      <canvas id="metricsCanvas"></canvas>
-    </div>
+    <div><div class="monitor-label">AUTOCORR LAG</div><canvas id="corrCanvas"></canvas></div>
+    <div><div class="monitor-label">METRICS</div><canvas id="metricsCanvas"></canvas></div>
+    <div><div class="monitor-label">WAVEFORM</div><canvas id="waveCanvas"></canvas></div>
   </div>
-  <div class="tab-display" id="tabOutput">No line captured yet.
-Play or upload a guitar-forward track.
-Hit RECORD then the prominent pitch becomes the tab line.
-Best on solos / lead / clear single-note lines.
+  <div class="tab-display" id="tabOutput">Ready. Record a clear single-note line. Quantize. Edit on the timeline. Lock position. Export MIDI or tab.</div>
+  <p class="note-hint">Monophonic: it tracks the strongest single pitch, best on clear leads and solos. The ROOT box is just that note's root, not a detected chord — a real chord needs more than one pitch at once. Transpose shifts live input and captured notes. Capo now applies to tab, playback, and MIDI. Your last capture is saved on this device and restored on reload.</p>
 </div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;">
-    <button id="exportBtn">COPY TAB</button>
-    <button id="playTabBtn">▶ PLAYBACK (synth)</button>
-  </div>
-  <p class="note-hint">Tracks the strongest fundamental. Works best when the guitar line is clear in the mix. Continuity engine prefers playable positions. Transpose shifts the captured sequence.</p>
-</div>
-
 <script>
-const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-const TUNINGS = {
-  standard: [82.41, 110.00, 146.83, 196.00, 246.94, 329.63],
-  dropd:    [73.42, 110.00, 146.83, 196.00, 246.94, 329.63],
-  dadgad:   [73.42, 110.00, 146.83, 196.00, 220.00, 293.66],
-  openG:    [73.42, 98.00, 146.83, 196.00, 246.94, 293.66]
+const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const TUNINGS={standard:[82.41,110,146.83,196,246.94,329.63],dropd:[73.42,110,146.83,196,246.94,329.63],dadgad:[73.42,110,146.83,196,220,293.66],openG:[73.42,98,146.83,196,246.94,293.66]};
+const STRING_NAMES=['E','A','D','G','B','e'];
+let audioCtx,analyser,sourceNode,stream,bufferSource;
+let isListening=false,isRecording=false,isLooping=false,lockPos=false;
+let transpose=0,capo=0,tempo=120,grid=8; // 8ths
+let currentTuning=TUNINGS.standard;
+let notes=[]; // {midi (raw, before transpose/capo), start, dur, conf, pos, locked}
+let selected=-1;
+let lastStable=null, stableCount=0, onsets=[], lastRms=0, prevRms=0;
+let lastCorr=null, lastPeak=0, playbackNodes=[];
+let recordingStart=0;
+let dragIndex=-1, dragStartT=0, dragOrigStart=0;
+
+const els={mic:document.getElementById('micBtn'),rec:document.getElementById('recBtn'),clear:document.getElementById('clearBtn'),quant:document.getElementById('quantBtn'),play:document.getElementById('playBtn'),loop:document.getElementById('loopBtn'),speed:document.getElementById('speed'),tuning:document.getElementById('tuning'),capo:document.getElementById('capo'),lock:document.getElementById('lockBtn'),exportMidi:document.getElementById('exportMidi'),exportTab:document.getElementById('exportTab'),note:document.getElementById('noteDisplay'),freq:document.getElementById('freqDisplay'),clarity:document.getElementById('clarityDisplay'),tempo:document.getElementById('tempoDisplay'),chord:document.getElementById('chordDisplay'),status:document.getElementById('statusDisplay'),tab:document.getElementById('tabOutput'),file:document.getElementById('fileInput'),transDown:document.getElementById('transDown'),transUp:document.getElementById('transUp'),transVal:document.getElementById('transVal')};
+const fretC=document.getElementById('fretCanvas'), timeC=document.getElementById('timelineCanvas'), waveC=document.getElementById('waveCanvas'), corrC=document.getElementById('corrCanvas'), metC=document.getElementById('metricsCanvas');
+const fctx=fretC.getContext('2d'), tctx=timeC.getContext('2d'), wctx=waveC.getContext('2d'), cctx=corrC.getContext('2d'), mctx=metC.getContext('2d');
+
+function resize(){const w=document.querySelector('.app').clientWidth-24; [fretC,timeC,waveC,corrC,metC].forEach(c=>{c.width=w; c.height=c===fretC?160:c===timeC?140:70}); drawAll();}
+window.addEventListener('resize',resize); resize();
+
+function effectiveMidi(n){return Math.max(0,Math.min(127,n.midi+transpose+capo));}
+function updateTrans(){els.transVal.textContent=transpose; render();}
+els.tuning.onchange=e=>{currentTuning=TUNINGS[e.target.value]; render();};
+els.capo.oninput=e=>{capo=+e.target.value||0; render();};
+els.transDown.onclick=()=>{transpose--; updateTrans();};
+els.transUp.onclick=()=>{transpose++; updateTrans();};
+els.lock.onclick=()=>{lockPos=!lockPos; els.lock.classList.toggle('active',lockPos); els.status.textContent=lockPos?'pos locked':'pos free';};
+els.clear.onclick=()=>{notes=[]; selected=-1; onsets=[]; render();};
+els.quant.onclick=quantize;
+els.play.onclick=playNotes;
+els.loop.onclick=()=>{isLooping=!isLooping; els.loop.classList.toggle('active',isLooping);};
+els.exportTab.onclick=()=>navigator.clipboard.writeText(els.tab.textContent).then(()=>els.status.textContent='tab copied');
+els.exportMidi.onclick=exportMIDI;
+els.rec.onclick=()=>{
+  isRecording=!isRecording;
+  els.rec.classList.toggle('active',isRecording);
+  els.rec.textContent=isRecording?'■ STOP':'● REC';
+  els.status.textContent=isRecording?'recording':'idle';
+  if(isRecording){recordingStart=performance.now(); onsets=[]; lastStable=null; stableCount=0;}
+  else estimateTempo();
 };
-const STRING_NAMES = ['E','A','D','G','B','e'];
+els.file.onchange=handleFile;
+els.mic.onclick=toggleMic;
 
-let audioCtx, analyser, sourceNode, stream, bufferSource;
-let isListening = false, isRecording = false;
-let transpose = 0;
-let currentTuning = TUNINGS.standard;
-let captured = []; // {midi, note, time}
-let lastStableMidi = null;
-let stableCount = 0;
-let lastPositions = [];
-
-const micBtn = document.getElementById('micBtn');
-const recBtn = document.getElementById('recBtn');
-const clearBtn = document.getElementById('clearBtn');
-const fileInput = document.getElementById('fileInput');
-const noteDisplay = document.getElementById('noteDisplay');
-const freqDisplay = document.getElementById('freqDisplay');
-const clarityDisplay = document.getElementById('clarityDisplay');
-const statusDisplay = document.getElementById('statusDisplay');
-const transVal = document.getElementById('transVal');
-const tabOutput = document.getElementById('tabOutput');
-const fretCanvas = document.getElementById('fretCanvas');
-const waveCanvas = document.getElementById('waveCanvas');
-const corrCanvas = document.getElementById('corrCanvas');
-const metricsCanvas = document.getElementById('metricsCanvas');
-const fctx = fretCanvas.getContext('2d');
-const wctx = waveCanvas.getContext('2d');
-const cctx = corrCanvas.getContext('2d');
-const mctx = metricsCanvas.getContext('2d');
-
-let lastCorr = null;
-let lastRms = 0;
-let lastPeakLag = 0;
-
-function resizeCanvases() {
-  const w = fretCanvas.parentElement.clientWidth - 24;
-  fretCanvas.width = w; fretCanvas.height = 180;
-  waveCanvas.width = w; waveCanvas.height = 80;
-  corrCanvas.width = corrCanvas.parentElement.clientWidth - 8; corrCanvas.height = 100;
-  metricsCanvas.width = metricsCanvas.parentElement.clientWidth - 8; metricsCanvas.height = 100;
+function autoCorrelate(buf,sr){
+  const SIZE=buf.length; let rms=0; for(let i=0;i<SIZE;i++) rms+=buf[i]*buf[i]; rms=Math.sqrt(rms/SIZE);
+  if(rms<0.008) return {freq:-1,clarity:0,rms,correlations:null,peak:0};
+  const corr=new Float32Array(SIZE);
+  for(let lag=0;lag<SIZE;lag++){let s=0; for(let i=0;i<SIZE-lag;i++) s+=buf[i]*buf[i+lag]; corr[lag]=s;}
+  let d=0; while(d<SIZE&&corr[d]>corr[d+1]) d++;
+  let maxv=-1,maxp=-1; for(let i=d;i<SIZE/2;i++) if(corr[i]>maxv){maxv=corr[i]; maxp=i;}
+  if(maxp<0||maxv<corr[0]*0.28) return {freq:-1,clarity:0,rms,correlations:corr,peak:0};
+  let T0=maxp; if(T0>0&&T0<SIZE-1){const x1=corr[T0-1],x2=corr[T0],x3=corr[T0+1],a=(x1+x3-2*x2)/2,b=(x3-x1)/2; if(a) T0-=b/(2*a);}
+  return {freq:sr/T0, clarity:maxv/corr[0], rms, correlations:corr, peak:maxp};
 }
-window.addEventListener('resize', resizeCanvases);
-resizeCanvases();
-
-document.getElementById('tuning').addEventListener('change', e => {
-  currentTuning = TUNINGS[e.target.value];
-  drawFretboard();
-});
-
-document.getElementById('transDown').onclick = () => { transpose--; updateTrans(); };
-document.getElementById('transUp').onclick = () => { transpose++; updateTrans(); };
-function updateTrans() {
-  transVal.textContent = transpose;
-  renderTab();
+function freqToMidi(f){return f>0?69+12*Math.log2(f/440):null;}
+function midiToNote(m){const n=Math.round(m); return NOTES[n%12]+(Math.floor(n/12)-1);}
+function noteRoot(m){return NOTES[Math.round(m)%12];}
+function getPositions(midi,tuning){
+  const f=440*Math.pow(2,(midi-69)/12); const pos=[];
+  tuning.forEach((open,s)=>{const fr=Math.round(12*Math.log2(f/open)); if(fr>=0&&fr<=22) pos.push({string:s,fret:fr,score:0});});
+  return pos;
+}
+function scorePosition(p,prev){
+  let sc=100 - p.fret*1.5;
+  if(prev){ sc -= Math.abs(p.fret-prev.fret)*2; if(p.string!==prev.string) sc-=4; if(Math.abs(p.string-prev.string)>1) sc-=6; }
+  if(p.fret===0) sc+=8;
+  return sc;
+}
+function chooseBest(positions,prev){
+  if(!positions.length) return null;
+  if(lockPos&&prev){
+    const sameString=positions.filter(p=>p.string===prev.string);
+    if(sameString.length) return sameString.reduce((b,p)=>scorePosition(p,prev)>scorePosition(b,prev)?p:b,sameString[0]);
+  }
+  return positions.reduce((b,p)=>scorePosition(p,prev)>scorePosition(b,prev)?p:b,positions[0]);
 }
 
-micBtn.onclick = toggleMic;
-recBtn.onclick = () => {
-  isRecording = !isRecording;
-  recBtn.classList.toggle('active', isRecording);
-  recBtn.textContent = isRecording ? '■ STOP' : '● RECORD';
-  statusDisplay.textContent = isRecording ? 'recording line' : (isListening ? 'listening' : 'idle');
-  if (!isRecording && captured.length) renderTab();
+let anim;
+function loop(){
+  if(!isListening||!analyser) return;
+  const buf=new Float32Array(analyser.fftSize); analyser.getFloatTimeDomainData(buf);
+  const r=autoCorrelate(buf,audioCtx.sampleRate);
+  lastRms=r.rms; lastCorr=r.correlations; lastPeak=r.peak;
+  let rawMidi=null, note='—', positions=[], root='—';
+  if(r.freq>50&&r.freq<1200&&r.clarity>0.38){
+    rawMidi=freqToMidi(r.freq);
+    const shown=rawMidi+transpose;
+    note=midiToNote(shown);
+    root=noteRoot(shown);
+    positions=getPositions(shown,currentTuning);
+    els.note.textContent=note; els.freq.textContent=r.freq.toFixed(1); els.clarity.textContent=r.clarity.toFixed(2); els.chord.textContent=root;
+  }else{ els.note.textContent='—'; els.freq.textContent='—'; els.clarity.textContent=r.clarity.toFixed(2); els.chord.textContent='—'; }
+  // Onset only on an energy rise, not on every frame, so tempo is not just the frame rate.
+  if(isRecording&&r.rms>0.02&&prevRms<0.015){
+    const now=performance.now();
+    if(onsets.length===0||now-onsets[onsets.length-1]>80) onsets.push(now);
+  }
+  prevRms=r.rms;
+  // Capture, timed from when REC was pressed, not from page load.
+  if(isRecording&&rawMidi!==null&&r.rms>0.02){
+    const now=performance.now();
+    const rnd=Math.round(rawMidi);
+    if(lastStable===null||Math.abs(rnd-lastStable)>0.5){ stableCount=0; lastStable=rnd; }
+    else{ stableCount++; if(stableCount===3){
+      const start=Math.max(0,(now-recordingStart)/1000);
+      const prev=notes.length?notes[notes.length-1]:null;
+      if(prev&&start>prev.start) prev.dur=Math.max(0.1,start-prev.start);
+      const shownPositions=getPositions(rnd+transpose,currentTuning);
+      const best=chooseBest(shownPositions,prev?prev.pos:null);
+      if(best) notes.push({midi:rnd,start,dur:0.25,conf:r.clarity,pos:best,locked:lockPos});
+      render();
+    }}
+  }
+  drawFret(positions); drawCorr(); drawMetrics(r.rms,r.clarity,stableCount,positions.length); drawWave(buf);
+  anim=requestAnimationFrame(loop);
+}
+function estimateTempo(){
+  if(onsets.length<4){tempo=120; els.tempo.textContent=tempo; return;}
+  const diffs=[]; for(let i=1;i<onsets.length;i++) diffs.push(onsets[i]-onsets[i-1]);
+  const med=diffs.sort((a,b)=>a-b)[Math.floor(diffs.length/2)];
+  tempo=Math.round(60000/med); if(tempo<60||tempo>200) tempo=120;
+  els.tempo.textContent=tempo;
+}
+function quantize(){
+  if(!notes.length) return;
+  const beat=60/tempo; const step=beat/2; // 8th-note grid
+  notes.forEach(n=>{ n.start=Math.round(n.start/step)*step; n.dur=Math.max(step*0.5, Math.round(n.dur/step)*step); });
+  render(); els.status.textContent='quantized';
+}
+function saveLocal(){
+  try{localStorage.setItem('fret-trace-notes',JSON.stringify({notes,tempo,transpose,capo,tuning:els.tuning.value}));}catch(e){}
+}
+function render(){
+  if(!notes.length){els.tab.textContent='Ready. Record a clear single-note line. Quantize. Edit on the timeline. Lock position. Export MIDI or tab.'; drawTimeline(); saveLocal(); return;}
+  const lines=['e|','B|','G|','D|','A|','E|'];
+  let prev=null, lastBar=-1;
+  const barDur=4*60/tempo;
+  notes.forEach(n=>{
+    const adj=effectiveMidi(n);
+    const poss=getPositions(adj,currentTuning);
+    const ch=n.locked&&n.pos?n.pos:chooseBest(poss,prev);
+    n.pos=ch; prev=ch;
+    const bar=Math.floor(n.start/barDur);
+    if(lastBar>=0&&bar>lastBar){for(let s=0;s<6;s++) lines[s]+='|';}
+    lastBar=bar;
+    const fs=ch?String(ch.fret).padStart(2,' '):'--';
+    for(let s=0;s<6;s++) lines[5-s]+=(ch&&ch.string===s?fs:'--')+'-';
+  });
+  lines.forEach((l,i)=>lines[i]+='|');
+  els.tab.textContent=`NEXUS FRET TRACE  |  tempo ${tempo}  |  transpose ${transpose}  |  capo ${capo}  |  ${notes.length} notes\n`+lines.join('\n');
+  drawTimeline(); saveLocal();
+}
+function drawFret(positions=[]){
+  const w=fretC.width,h=fretC.height; fctx.clearRect(0,0,w,h); fctx.fillStyle='#050508'; fctx.fillRect(0,0,w,h);
+  const frets=15, left=36, right=w-16, top=16, bottom=h-16;
+  const sg=(bottom-top)/5, fg=(right-left)/frets;
+  fctx.strokeStyle='#333'; for(let f=0;f<=frets;f++){const x=left+f*fg; fctx.beginPath(); fctx.moveTo(x,top-4); fctx.lineTo(x,bottom+4); fctx.stroke();}
+  for(let s=0;s<6;s++){const y=top+s*sg; fctx.strokeStyle=s===0||s===5?'#00ff87':'#60efff'; fctx.lineWidth=s===0||s===5?2.2:1.4; fctx.beginPath(); fctx.moveTo(left-6,y); fctx.lineTo(right+4,y); fctx.stroke(); fctx.fillStyle='#ffcc00'; fctx.font='10px monospace'; fctx.fillText(STRING_NAMES[s],4,y+3);}
+  positions.forEach(p=>{if(p.fret>frets)return; const x=left+p.fret*fg+fg*0.5, y=top+p.string*sg; fctx.beginPath(); fctx.arc(x,y,8,0,Math.PI*2); fctx.fillStyle=p.fret===0?'#ffcc00':'#ff0080'; fctx.fill(); fctx.fillStyle='#fff'; fctx.font='bold 10px monospace'; fctx.textAlign='center'; fctx.fillText(p.fret,x,y+3); fctx.textAlign='left';});
+}
+function drawTimeline(){
+  const w=timeC.width,h=timeC.height; tctx.clearRect(0,0,w,h); tctx.fillStyle='#050508'; tctx.fillRect(0,0,w,h);
+  if(!notes.length) return;
+  const maxT=Math.max(...notes.map(n=>n.start+n.dur),4);
+  const px=w/maxT;
+  const beat=60/tempo; tctx.strokeStyle='#222'; for(let t=0;t<maxT;t+=beat/2){tctx.beginPath(); tctx.moveTo(t*px,0); tctx.lineTo(t*px,h); tctx.stroke();}
+  notes.forEach((n,i)=>{
+    const x=n.start*px, ww=n.dur*px, y=h-20-(effectiveMidi(n)%12)*6;
+    tctx.fillStyle=i===selected?'#ffcc00':(n.conf>0.6?'#00ff87':'#60efff');
+    tctx.globalAlpha=0.85; tctx.fillRect(x,y,Math.max(4,ww),10); tctx.globalAlpha=1;
+    tctx.fillStyle='#fff'; tctx.font='9px monospace'; tctx.fillText(midiToNote(effectiveMidi(n)),x+2,y+8);
+  });
+}
+function drawCorr(){const w=corrC.width,h=corrC.height; cctx.clearRect(0,0,w,h); cctx.fillStyle='#050508'; cctx.fillRect(0,0,w,h); if(!lastCorr)return; const maxL=Math.min(lastCorr.length/2,300); let mx=1; for(let i=0;i<maxL;i+=2) mx=Math.max(mx,lastCorr[i]); cctx.strokeStyle='#60efff'; cctx.beginPath(); for(let x=0;x<w;x++){const lag=Math.floor(x*maxL/w); const y=h-4-(lastCorr[lag]/mx)*(h-8); if(x===0)cctx.moveTo(x,y); else cctx.lineTo(x,y);} cctx.stroke(); if(lastPeak>0){const px=lastPeak*w/maxL; cctx.strokeStyle='#ff0080'; cctx.beginPath(); cctx.moveTo(px,2); cctx.lineTo(px,h-2); cctx.stroke();}}
+function drawMetrics(rms,cl,st,pc){const w=metC.width,h=metC.height; mctx.clearRect(0,0,w,h); mctx.fillStyle='#050508'; mctx.fillRect(0,0,w,h); const items=[{l:'RMS',v:rms.toFixed(2),c:'#00ff87'},{l:'CLR',v:cl.toFixed(2),c:'#60efff'},{l:'STB',v:st,c:'#ffcc00'},{l:'POS',v:pc,c:'#ff0080'}]; mctx.font='10px monospace'; items.forEach((it,i)=>{const y=16+i*14; mctx.fillStyle='#666'; mctx.fillText(it.l,6,y); mctx.fillStyle=it.c; mctx.fillText(it.v,40,y);});}
+function drawWave(buf){const w=waveC.width,h=waveC.height; wctx.clearRect(0,0,w,h); wctx.fillStyle='#050508'; wctx.fillRect(0,0,w,h); wctx.strokeStyle='#00ff87'; wctx.beginPath(); const step=Math.floor(buf.length/w); for(let i=0;i<w;i++){const y=h/2+(buf[i*step]||0)*h*0.4; if(i===0)wctx.moveTo(i,y); else wctx.lineTo(i,y);} wctx.stroke();}
+function drawAll(){drawFret(); drawTimeline(); drawCorr(); drawMetrics(0,0,0,0); drawWave(new Float32Array(1024));}
+
+// timeline interaction: click select, drag to move in time, wheel pitch, right-click delete
+function timeAtEvent(e){
+  const rect=timeC.getBoundingClientRect();
+  const x=(e.clientX-rect.left)*(timeC.width/rect.width);
+  const maxT=Math.max(...notes.map(n=>n.start+n.dur),4);
+  return x/(timeC.width/maxT);
+}
+timeC.onmousedown=e=>{
+  if(!notes.length) return;
+  const t=timeAtEvent(e);
+  selected=notes.findIndex(n=>t>=n.start&&t<=n.start+n.dur);
+  if(selected>=0){dragIndex=selected; dragStartT=t; dragOrigStart=notes[selected].start;}
+  render();
 };
-clearBtn.onclick = () => {
-  captured = [];
-  lastStableMidi = null;
-  renderTab();
-  statusDisplay.textContent = 'cleared';
+timeC.onmousemove=e=>{
+  if(dragIndex<0) return;
+  const t=timeAtEvent(e);
+  notes[dragIndex].start=Math.max(0,dragOrigStart+(t-dragStartT));
+  render();
 };
-fileInput.onchange = handleFile;
+window.addEventListener('mouseup',()=>{dragIndex=-1;});
+timeC.onwheel=e=>{if(selected<0)return; e.preventDefault(); notes[selected].midi+=e.deltaY>0?-1:1; render();};
+timeC.oncontextmenu=e=>{e.preventDefault(); if(selected>=0){notes.splice(selected,1); selected=-1; render();}};
 
-document.getElementById('exportBtn').onclick = () => {
-  navigator.clipboard.writeText(tabOutput.textContent).then(() => {
-    statusDisplay.textContent = 'tab copied';
+function playNotes(){
+  if(!notes.length) return;
+  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  playbackNodes.forEach(n=>{try{n.stop();}catch{}}); playbackNodes=[];
+  const rate=+els.speed.value;
+  const base=audioCtx.currentTime+0.05;
+  const firstStart=notes[0].start;
+  let endT=base;
+  notes.forEach(n=>{
+    const freq=440*Math.pow(2,(effectiveMidi(n)-69)/12);
+    const t=base+(n.start-firstStart)/rate;
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.frequency.value=freq; o.type='sawtooth';
+    g.gain.setValueAtTime(0.12,t); g.gain.exponentialRampToValueAtTime(0.01,t+n.dur/rate);
+    o.connect(g); g.connect(audioCtx.destination); o.start(t); o.stop(t+n.dur/rate+0.05);
+    playbackNodes.push(o); endT=Math.max(endT,t+n.dur/rate);
   });
-};
-
-document.getElementById('playTabBtn').onclick = playCaptured;
-
-async function toggleMic() {
-  if (isListening && stream) {
-    stopAudio();
-    return;
-  }
-  try {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
-    sourceNode = audioCtx.createMediaStreamSource(stream);
-    setupAnalyser(sourceNode);
-    isListening = true;
-    micBtn.classList.add('active');
-    micBtn.textContent = '⏹ MIC OFF';
-    statusDisplay.textContent = 'mic live';
-    loop();
-  } catch (err) {
-    statusDisplay.textContent = 'mic denied';
-    console.error(err);
-  }
+  els.status.textContent='playing '+rate+'x';
+  if(isLooping) setTimeout(playNotes, (endT-audioCtx.currentTime)*1000+100);
 }
-
-function setupAnalyser(src) {
-  analyser = audioCtx.createAnalyser();
-  analyser.fftSize = 2048;
-  analyser.smoothingTimeConstant = 0.8;
-  src.connect(analyser);
-  // do not connect to destination for mic to avoid feedback
-}
-
-async function handleFile(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  stopAudio();
-  try {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const arrayBuffer = await file.arrayBuffer();
-    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-    bufferSource = audioCtx.createBufferSource();
-    bufferSource.buffer = audioBuffer;
-    setupAnalyser(bufferSource);
-    bufferSource.connect(audioCtx.destination);
-    bufferSource.start(0);
-    isListening = true;
-    statusDisplay.textContent = 'playing file';
-    loop();
-    bufferSource.onended = () => { isListening = false; statusDisplay.textContent = 'file ended'; };
-  } catch (err) {
-    statusDisplay.textContent = 'file decode fail';
-  }
-}
-
-function stopAudio() {
-  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-  if (bufferSource) { try { bufferSource.stop(); } catch(e){} bufferSource = null; }
-  if (audioCtx) { audioCtx.close(); audioCtx = null; }
-  isListening = false;
-  micBtn.classList.remove('active');
-  micBtn.textContent = '🎤 MIC';
-  statusDisplay.textContent = 'stopped';
-}
-
-function autoCorrelate(buf, sampleRate) {
-  const SIZE = buf.length;
-  let rms = 0;
-  for (let i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
-  rms = Math.sqrt(rms / SIZE);
-  if (rms < 0.008) return { freq: -1, clarity: 0, rms, correlations: null, peakLag: 0 };
-
-  const correlations = new Float32Array(SIZE);
-  for (let lag = 0; lag < SIZE; lag++) {
-    let sum = 0;
-    for (let i = 0; i < SIZE - lag; i++) sum += buf[i] * buf[i + lag];
-    correlations[lag] = sum;
-  }
-
-  let d = 0;
-  while (d < SIZE && correlations[d] > correlations[d + 1]) d++;
-  let maxval = -1, maxpos = -1;
-  for (let i = d; i < SIZE / 2; i++) {
-    if (correlations[i] > maxval) { maxval = correlations[i]; maxpos = i; }
-  }
-  if (maxpos === -1 || maxval < correlations[0] * 0.3) return { freq: -1, clarity: 0, rms, correlations, peakLag: 0 };
-
-  // parabolic interpolation
-  let T0 = maxpos;
-  if (T0 > 0 && T0 < SIZE - 1) {
-    const x1 = correlations[T0 - 1], x2 = correlations[T0], x3 = correlations[T0 + 1];
-    const a = (x1 + x3 - 2 * x2) / 2;
-    const b = (x3 - x1) / 2;
-    if (a) T0 = T0 - b / (2 * a);
-  }
-  const freq = sampleRate / T0;
-  const clarity = maxval / correlations[0];
-  return { freq, clarity, rms, correlations, peakLag: maxpos };
-}
-
-function freqToMidi(freq) {
-  if (freq <= 0) return null;
-  return 69 + 12 * Math.log2(freq / 440);
-}
-
-function midiToNote(midi) {
-  const n = Math.round(midi);
-  const name = NOTES[n % 12];
-  const oct = Math.floor(n / 12) - 1;
-  return name + oct;
-}
-
-function getPositions(midi, tuning) {
-  const freq = 440 * Math.pow(2, (midi - 69) / 12);
-  const positions = [];
-  tuning.forEach((openFreq, s) => {
-    const fret = Math.round(12 * Math.log2(freq / openFreq));
-    if (fret >= 0 && fret <= 22) {
-      positions.push({ string: s, fret, open: openFreq });
-    }
+function buildMidiBytes(noteList,bpm){
+  const ticks=480;
+  const events=[];
+  noteList.forEach(n=>{
+    const midi=Math.max(0,Math.min(127,n.midi));
+    const onTick=Math.round(n.start*ticks*bpm/60);
+    const offTick=onTick+Math.max(1,Math.round(n.dur*ticks*bpm/60));
+    events.push({tick:onTick,data:[0x90,midi,80],order:1});
+    events.push({tick:offTick,data:[0x80,midi,0],order:0});
   });
-  return positions;
+  events.sort((a,b)=>a.tick-b.tick||a.order-b.order);
+  const body=[];
+  const writeVar=v=>{let b=[]; do{b.push(v&0x7f); v>>=7;}while(v); for(let i=b.length-1;i>=0;i--) body.push(b[i]|(i?0x80:0));};
+  let lastTick=0;
+  // tempo meta event
+  writeVar(0); const usPerBeat=Math.round(60000000/bpm); body.push(0xFF,0x51,0x03,(usPerBeat>>16)&255,(usPerBeat>>8)&255,usPerBeat&255);
+  events.forEach(e=>{writeVar(e.tick-lastTick); lastTick=e.tick; body.push(...e.data);});
+  writeVar(0); body.push(0xFF,0x2F,0x00); // end of track
+  const out=[];
+  out.push(0x4d,0x54,0x68,0x64,0,0,0,6,0,1,0,1,0x01,0xe0); // MThd, format 1, 1 track, 480 ticks/quarter
+  out.push(0x4d,0x54,0x72,0x6b,(body.length>>24)&255,(body.length>>16)&255,(body.length>>8)&255,body.length&255);
+  out.push(...body);
+  return new Uint8Array(out);
+}
+function exportMIDI(){
+  const data=buildMidiBytes(notes.map(n=>({midi:effectiveMidi(n),start:n.start,dur:n.dur})),tempo);
+  const blob=new Blob([data],{type:'audio/midi'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='fret-trace.mid'; a.click();
+  els.status.textContent='midi downloaded';
 }
 
-function choosePosition(positions, prev) {
-  if (!positions.length) return null;
-  if (!prev) return positions.reduce((a, b) => a.fret < b.fret ? a : b);
-  // prefer continuity: closest fret, then same string
-  return positions.reduce((best, p) => {
-    const dist = Math.abs(p.fret - prev.fret) + (p.string !== prev.string ? 3 : 0);
-    const bestDist = Math.abs(best.fret - prev.fret) + (best.string !== prev.string ? 3 : 0);
-    return dist < bestDist ? p : best;
-  }, positions[0]);
+async function toggleMic(){
+  if(isListening&&stream){stop(); return;}
+  try{
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+    sourceNode=audioCtx.createMediaStreamSource(stream);
+    analyser=audioCtx.createAnalyser(); analyser.fftSize=2048; sourceNode.connect(analyser);
+    isListening=true; els.mic.classList.add('active'); els.mic.textContent='⏹ MIC'; els.status.textContent='mic live'; loop();
+  }catch(e){els.status.textContent='mic denied';}
 }
-
-let animId;
-function loop() {
-  if (!isListening || !analyser) return;
-  const buf = new Float32Array(analyser.fftSize);
-  analyser.getFloatTimeDomainData(buf);
-  const { freq, clarity, rms, correlations, peakLag } = autoCorrelate(buf, audioCtx.sampleRate);
-  lastRms = rms;
-  lastCorr = correlations;
-  lastPeakLag = peakLag;
-
-  let midi = null, note = '—', positions = [];
-  if (freq > 50 && freq < 1200 && clarity > 0.4) {
-    midi = freqToMidi(freq); // raw
-    note = midiToNote(midi + transpose);
-    positions = getPositions(midi + transpose, currentTuning);
-    noteDisplay.textContent = note;
-    freqDisplay.textContent = freq.toFixed(1);
-    clarityDisplay.textContent = clarity.toFixed(2);
-  } else {
-    noteDisplay.textContent = '—';
-    freqDisplay.textContent = '—';
-    clarityDisplay.textContent = clarity.toFixed(2);
-  }
-
-  // stability for recording
-  if (isRecording && midi !== null) {
-    const rounded = Math.round(midi); // store raw
-    if (lastStableMidi === null || Math.abs(rounded - lastStableMidi) > 0.6) {
-      stableCount = 0;
-      lastStableMidi = rounded;
-    } else {
-      stableCount++;
-      if (stableCount === 4 && (captured.length === 0 || captured[captured.length-1].midi !== rounded)) {
-        captured.push({ midi: rounded, note: midiToNote(rounded + transpose), time: performance.now() });
-        renderTab();
-      }
-    }
-  }
-
-  lastPositions = positions;
-  drawFretboard(positions);
-  drawWave(buf);
-  drawCorr(lastCorr, lastPeakLag);
-  drawMetrics(lastRms, clarity, stableCount, positions.length);
-  animId = requestAnimationFrame(loop);
+async function handleFile(e){
+  const f=e.target.files[0]; if(!f) return; stop();
+  try{
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const ab=await f.arrayBuffer(); const buf=await audioCtx.decodeAudioData(ab);
+    bufferSource=audioCtx.createBufferSource(); bufferSource.buffer=buf;
+    analyser=audioCtx.createAnalyser(); analyser.fftSize=2048; bufferSource.connect(analyser); bufferSource.connect(audioCtx.destination);
+    bufferSource.start(0); isListening=true; els.status.textContent='file playing'; loop();
+    bufferSource.onended=()=>{isListening=false; els.status.textContent='file ended';};
+  }catch(err){els.status.textContent='decode fail';}
 }
-
-function drawFretboard(positions = []) {
-  const w = fretCanvas.width, h = fretCanvas.height;
-  fctx.clearRect(0, 0, w, h);
-  fctx.fillStyle = '#050508';
-  fctx.fillRect(0, 0, w, h);
-
-  const strings = 6;
-  const frets = 15;
-  const left = 40, right = w - 20;
-  const top = 20, bottom = h - 20;
-  const stringGap = (bottom - top) / (strings - 1);
-  const fretGap = (right - left) / frets;
-
-  // frets
-  fctx.strokeStyle = '#333';
-  fctx.lineWidth = 1;
-  for (let f = 0; f <= frets; f++) {
-    const x = left + f * fretGap;
-    fctx.beginPath();
-    fctx.moveTo(x, top - 4);
-    fctx.lineTo(x, bottom + 4);
-    fctx.stroke();
-    if (f % 5 === 0 && f > 0) {
-      fctx.fillStyle = '#444';
-      fctx.font = '10px monospace';
-      fctx.fillText(f, x - 4, bottom + 14);
-    }
+function stop(){if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;} if(bufferSource){try{bufferSource.stop();}catch{}} if(audioCtx){audioCtx.close(); audioCtx=null;} isListening=false; els.mic.classList.remove('active'); els.mic.textContent='🎤 MIC'; els.status.textContent='stopped';}
+// Restore a saved capture on this device, if any.
+try{
+  const saved=JSON.parse(localStorage.getItem('fret-trace-notes')||'null');
+  if(saved&&Array.isArray(saved.notes)&&saved.notes.length){
+    notes=saved.notes; tempo=saved.tempo||120; transpose=saved.transpose||0; capo=saved.capo||0;
+    if(saved.tuning&&TUNINGS[saved.tuning]){currentTuning=TUNINGS[saved.tuning]; els.tuning.value=saved.tuning;}
+    els.capo.value=capo; els.transVal.textContent=transpose; els.tempo.textContent=tempo;
   }
-  // strings
-  for (let s = 0; s < strings; s++) {
-    const y = top + s * stringGap;
-    fctx.strokeStyle = s === 0 || s === 5 ? '#00ff87' : '#60efff';
-    fctx.lineWidth = s === 0 || s === 5 ? 2.5 : 1.5;
-    fctx.shadowColor = fctx.strokeStyle;
-    fctx.shadowBlur = 6;
-    fctx.beginPath();
-    fctx.moveTo(left - 8, y);
-    fctx.lineTo(right + 4, y);
-    fctx.stroke();
-    fctx.shadowBlur = 0;
-    fctx.fillStyle = '#ffcc00';
-    fctx.font = '11px monospace';
-    fctx.fillText(STRING_NAMES[s], 8, y + 4);
-  }
-
-  // highlight positions
-  positions.forEach(p => {
-    if (p.fret > frets) return;
-    const x = left + p.fret * fretGap + fretGap * 0.5;
-    const y = top + p.string * stringGap;
-    fctx.beginPath();
-    fctx.arc(x, y, 9, 0, Math.PI * 2);
-    fctx.fillStyle = p.fret === 0 ? '#ffcc00' : '#ff0080';
-    fctx.shadowColor = fctx.fillStyle;
-    fctx.shadowBlur = 12;
-    fctx.fill();
-    fctx.shadowBlur = 0;
-    fctx.fillStyle = '#fff';
-    fctx.font = 'bold 11px monospace';
-    fctx.textAlign = 'center';
-    fctx.fillText(p.fret, x, y + 4);
-    fctx.textAlign = 'left';
-  });
-}
-
-function drawWave(buf) {
-  const w = waveCanvas.width, h = waveCanvas.height;
-  wctx.clearRect(0, 0, w, h);
-  wctx.fillStyle = '#050508';
-  wctx.fillRect(0, 0, w, h);
-  wctx.beginPath();
-  wctx.strokeStyle = '#00ff87';
-  wctx.lineWidth = 1.5;
-  wctx.shadowColor = '#00ff87';
-  wctx.shadowBlur = 4;
-  const step = Math.floor(buf.length / w);
-  for (let i = 0; i < w; i++) {
-    const v = buf[i * step] || 0;
-    const y = h / 2 + v * h * 0.45;
-    if (i === 0) wctx.moveTo(i, y); else wctx.lineTo(i, y);
-  }
-  wctx.stroke();
-  wctx.shadowBlur = 0;
-}
-
-function drawCorr(correlations, peakLag) {
-  const w = corrCanvas.width, h = corrCanvas.height;
-  cctx.clearRect(0, 0, w, h);
-  cctx.fillStyle = '#050508';
-  cctx.fillRect(0, 0, w, h);
-  if (!correlations) return;
-  const maxLag = Math.min(correlations.length / 2, 400);
-  const step = maxLag / w;
-  let maxC = 0;
-  for (let i = 0; i < maxLag; i += 2) maxC = Math.max(maxC, correlations[i]);
-  if (maxC < 1) maxC = 1;
-  cctx.beginPath();
-  cctx.strokeStyle = '#60efff';
-  cctx.lineWidth = 1.2;
-  cctx.shadowColor = '#60efff';
-  cctx.shadowBlur = 3;
-  for (let x = 0; x < w; x++) {
-    const lag = Math.floor(x * step);
-    const v = correlations[lag] / maxC;
-    const y = h - 8 - v * (h - 16);
-    if (x === 0) cctx.moveTo(x, y); else cctx.lineTo(x, y);
-  }
-  cctx.stroke();
-  cctx.shadowBlur = 0;
-  // peak marker
-  if (peakLag > 0 && peakLag < maxLag) {
-    const px = (peakLag / step);
-    cctx.strokeStyle = '#ff0080';
-    cctx.lineWidth = 2;
-    cctx.beginPath();
-    cctx.moveTo(px, 4);
-    cctx.lineTo(px, h - 4);
-    cctx.stroke();
-    cctx.fillStyle = '#ff0080';
-    cctx.font = '10px monospace';
-    cctx.fillText('LAG ' + peakLag, Math.min(px + 4, w - 50), 14);
-  }
-}
-
-function drawMetrics(rms, clarity, stable, posCount) {
-  const w = metricsCanvas.width, h = metricsCanvas.height;
-  mctx.clearRect(0, 0, w, h);
-  mctx.fillStyle = '#050508';
-  mctx.fillRect(0, 0, w, h);
-  const items = [
-    { label: 'RMS', val: rms.toFixed(3), color: '#00ff87' },
-    { label: 'CLARITY', val: clarity.toFixed(2), color: '#60efff' },
-    { label: 'STABLE', val: stable, color: '#ffcc00' },
-    { label: 'POS', val: posCount, color: '#ff0080' }
-  ];
-  mctx.font = '11px monospace';
-  items.forEach((it, i) => {
-    const y = 22 + i * 20;
-    mctx.fillStyle = '#666';
-    mctx.fillText(it.label, 8, y);
-    mctx.fillStyle = it.color;
-    mctx.shadowColor = it.color;
-    mctx.shadowBlur = 4;
-    mctx.fillText(it.val, 70, y);
-    mctx.shadowBlur = 0;
-    // bar
-    const barW = Math.min(1, parseFloat(it.val) || 0) * (w - 120);
-    mctx.fillStyle = it.color;
-    mctx.globalAlpha = 0.6;
-    mctx.fillRect(110, y - 10, barW, 6);
-    mctx.globalAlpha = 1;
-  });
-}
-
-function renderTab() {
-  if (!captured.length) {
-    tabOutput.textContent = 'No line captured yet.\nPlay or upload a guitar-forward track.\nHit RECORD then the prominent pitch becomes the tab line.\nBest on solos / lead / clear single-note lines.';
-    return;
-  }
-  const lines = ['e|', 'B|', 'G|', 'D|', 'A|', 'E|'];
-  let prevPos = null;
-  const sequence = captured.map(c => {
-    const adjusted = c.midi + transpose;
-    const poss = getPositions(adjusted, currentTuning);
-    const chosen = choosePosition(poss, prevPos);
-    prevPos = chosen;
-    return { ...c, adjusted, chosen };
-  });
-
-  sequence.forEach((s, i) => {
-    const fretStr = s.chosen ? String(s.chosen.fret).padStart(2, ' ') : '--';
-    for (let str = 0; str < 6; str++) {
-      if (s.chosen && s.chosen.string === str) {
-        lines[5 - str] += fretStr + '-';
-      } else {
-        lines[5 - str] += '--' + '-';
-      }
-    }
-  });
-  // close
-  lines.forEach((l, i) => lines[i] = l + '|');
-  const header = `NEXUS FRET TRACE  |  transpose ${transpose}  |  ${captured.length} notes\n`;
-  tabOutput.textContent = header + lines.join('\n');
-}
-
-function playCaptured() {
-  if (!captured.length || !audioCtx) {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  let t = audioCtx.currentTime + 0.1;
-  captured.forEach(c => {
-    const midi = c.midi + transpose;
-    const freq = 440 * Math.pow(2, (midi - 69) / 12);
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.frequency.value = freq;
-    osc.type = 'sawtooth';
-    gain.gain.setValueAtTime(0.15, t);
-    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.35);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start(t);
-    osc.stop(t + 0.4);
-    t += 0.42;
-  });
-  statusDisplay.textContent = 'playback';
-}
-
-// initial draw
-drawFretboard();
-drawCorr(null, 0);
-drawMetrics(0, 0, 0, 0);
+}catch(e){}
+drawAll(); render();
 </script>
 </body>
 </html>
