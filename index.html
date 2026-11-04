@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>NEXUS · FRET TRACE</title>
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -21,14 +21,6 @@ h2{color:var(--neon-c);text-shadow:0 0 8px var(--neon-c);font-size:18px;margin:8
 .controls{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
 .control-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .control-row .row-label{font-size:10px;color:var(--neon-c);letter-spacing:1px;min-width:52px}
-@media(max-width:800px){
-  .control-row .row-label{min-width:44px;font-size:9px}
-  button,select,input,a.btn{padding:5px 8px}
-  .monitors{grid-template-columns:1fr 1fr 1fr;gap:4px}
-  .monitor-label{font-size:8px}
-  .tab-display{white-space:pre-wrap;overflow-x:hidden;font-size:11px}
-  .note-hint{color:#aaa}
-}
 button,select,input,a.btn{background:#1a1a22;color:var(--neon-g);border:1px solid var(--neon-g);padding:6px 10px;border-radius:4px;font-family:inherit;font-size:12px;cursor:pointer;box-shadow:0 0 6px rgba(0,255,135,.3);text-decoration:none;display:inline-block}
 button.active{background:var(--neon-p);color:#fff;border-color:var(--neon-p)}
 .live-info{background:var(--panel);border:1px solid #333;padding:6px 10px;border-radius:6px;margin-bottom:10px;font-size:13px;display:flex;flex-wrap:wrap;gap:12px}
@@ -42,6 +34,16 @@ canvas{display:block;background:#050508;border:1px solid #222;border-radius:6px;
 .tab-display{background:#050508;border:1px solid var(--neon-c);border-radius:6px;padding:10px;font-family:monospace;font-size:12px;line-height:1.35;white-space:pre;overflow-x:auto;min-height:100px;color:var(--neon-g);text-shadow:0 0 4px var(--neon-g);margin-bottom:8px}
 .note-hint{font-size:10px;color:#777;margin-top:4px}
 .row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;align-items:center}
+/* Phone overrides LAST, so they win over the rules above. */
+@media(max-width:800px){
+  .control-row .row-label{min-width:44px;font-size:9px}
+  button,select,input,a.btn{padding:5px 8px}
+  .monitors{grid-template-columns:1fr 1fr 1fr;gap:4px}
+  .monitor-label{font-size:8px}
+  .tab-display{white-space:pre-wrap;overflow-x:hidden;font-size:11px}
+  .note-hint{color:#aaa}
+  .app{padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+}
 </style>
 </head>
 <body>
