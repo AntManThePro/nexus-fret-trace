@@ -12,7 +12,7 @@
 :root { --neon-g:#00ff87; --neon-c:#60efff; --neon-p:#ff0080; --neon-y:#ffcc00; --bg:#0a0a0f; --panel:#111118; }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:#e0e0e0;font-family:'Courier New',Consolas,monospace;min-height:100vh;overflow-x:hidden}
-.nexus-stamp{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #222;background:linear-gradient(90deg,#0a0a0f,#111)}
+.nexus-stamp{display:flex;align-items:center;justify-content:space-between;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;border-bottom:1px solid #222;background:linear-gradient(90deg,#0a0a0f,#111)}
 .nexus-stamp h1{font-size:28px;color:var(--neon-g);text-shadow:0 0 12px var(--neon-g);letter-spacing:2px;margin:0}
 .nexus-stamp p{font-size:11px;color:var(--neon-c);letter-spacing:1px}
 .nexus-chip{font-size:10px;color:var(--neon-y);background:#1a1a22;padding:2px 6px;border-radius:4px;display:inline-block;margin-bottom:4px}
@@ -20,7 +20,15 @@ body{background:var(--bg);color:#e0e0e0;font-family:'Courier New',Consolas,monos
 h2{color:var(--neon-c);text-shadow:0 0 8px var(--neon-c);font-size:18px;margin:8px 0 12px;letter-spacing:1px}
 .controls{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
 .control-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.control-row .row-label{font-size:10px;color:var(--neon-c);letter-spacing:1px;min-width:64px}
+.control-row .row-label{font-size:10px;color:var(--neon-c);letter-spacing:1px;min-width:52px}
+@media(max-width:800px){
+  .control-row .row-label{min-width:44px;font-size:9px}
+  button,select,input,a.btn{padding:5px 8px}
+  .monitors{grid-template-columns:1fr 1fr 1fr;gap:4px}
+  .monitor-label{font-size:8px}
+  .tab-display{white-space:pre-wrap;overflow-x:hidden;font-size:11px}
+  .note-hint{color:#aaa}
+}
 button,select,input,a.btn{background:#1a1a22;color:var(--neon-g);border:1px solid var(--neon-g);padding:6px 10px;border-radius:4px;font-family:inherit;font-size:12px;cursor:pointer;box-shadow:0 0 6px rgba(0,255,135,.3);text-decoration:none;display:inline-block}
 button.active{background:var(--neon-p);color:#fff;border-color:var(--neon-p)}
 .live-info{background:var(--panel);border:1px solid #333;padding:6px 10px;border-radius:6px;margin-bottom:10px;font-size:13px;display:flex;flex-wrap:wrap;gap:12px}
@@ -30,7 +38,6 @@ canvas{display:block;background:#050508;border:1px solid #222;border-radius:6px;
 #timelineCanvas{height:140px;cursor:crosshair}
 #waveCanvas,#corrCanvas,#metricsCanvas{height:70px}
 .monitors{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px}
-@media(max-width:800px){.monitors{grid-template-columns:1fr}}
 .monitor-label{font-size:9px;color:var(--neon-c);letter-spacing:1px;margin-bottom:2px;text-transform:uppercase}
 .tab-display{background:#050508;border:1px solid var(--neon-c);border-radius:6px;padding:10px;font-family:monospace;font-size:12px;line-height:1.35;white-space:pre;overflow-x:auto;min-height:100px;color:var(--neon-g);text-shadow:0 0 4px var(--neon-g);margin-bottom:8px}
 .note-hint{font-size:10px;color:#777;margin-top:4px}
@@ -63,6 +70,7 @@ canvas{display:block;background:#050508;border:1px solid #222;border-radius:6px;
       <button id="clearBtn">CLEAR</button>
       <button id="quantBtn">QUANT</button>
       <button id="lockBtn">LOCK POS</button>
+      <button id="delNoteBtn">DEL NOTE</button>
     </div>
     <div class="control-row"><span class="row-label">PLAY</span>
       <button id="playBtn">▶ PLAY</button>
@@ -90,7 +98,7 @@ canvas{display:block;background:#050508;border:1px solid #222;border-radius:6px;
     <div>STATUS <span id="statusDisplay">idle</span></div>
   </div>
   <canvas id="fretCanvas"></canvas>
-  <div class="monitor-label">TIMELINE · CLICK SELECT · DRAG TO MOVE IN TIME · WHEEL PITCH · RIGHT-CLICK DELETE</div>
+  <div class="monitor-label">TIMELINE · TAP TO SELECT · DRAG TO MOVE IN TIME · DRAG UP/DOWN TO CHANGE PITCH · DEL NOTE TO DELETE</div>
   <canvas id="timelineCanvas"></canvas>
   <div class="monitors">
     <div><div class="monitor-label">AUTOCORR LAG</div><canvas id="corrCanvas"></canvas></div>
@@ -113,14 +121,14 @@ let selected=-1;
 let lastStable=null, stableCount=0, onsets=[], lastRms=0, prevRms=0;
 let lastCorr=null, lastPeak=0, playbackNodes=[];
 let recordingStart=0;
-let dragIndex=-1, dragStartT=0, dragOrigStart=0;
+let dragIndex=-1, dragStartT=0, dragOrigStart=0, dragStartY=0, dragStartMidi=0, dragMode='';
 let pitchTrail=[]; // {t (seconds from REC press), midi (raw)} during recording, for bend/slide analysis
 
-const els={mic:document.getElementById('micBtn'),rec:document.getElementById('recBtn'),test:document.getElementById('testBtn'),bendTest:document.getElementById('bendTestBtn'),clear:document.getElementById('clearBtn'),quant:document.getElementById('quantBtn'),play:document.getElementById('playBtn'),loop:document.getElementById('loopBtn'),speed:document.getElementById('speed'),tuning:document.getElementById('tuning'),capo:document.getElementById('capo'),lock:document.getElementById('lockBtn'),exportMidi:document.getElementById('exportMidi'),exportTab:document.getElementById('exportTab'),note:document.getElementById('noteDisplay'),freq:document.getElementById('freqDisplay'),clarity:document.getElementById('clarityDisplay'),tempo:document.getElementById('tempoDisplay'),chord:document.getElementById('chordDisplay'),status:document.getElementById('statusDisplay'),tab:document.getElementById('tabOutput'),file:document.getElementById('fileInput'),transDown:document.getElementById('transDown'),transUp:document.getElementById('transUp'),transVal:document.getElementById('transVal')};
+const els={mic:document.getElementById('micBtn'),rec:document.getElementById('recBtn'),test:document.getElementById('testBtn'),bendTest:document.getElementById('bendTestBtn'),clear:document.getElementById('clearBtn'),delNote:document.getElementById('delNoteBtn'),quant:document.getElementById('quantBtn'),play:document.getElementById('playBtn'),loop:document.getElementById('loopBtn'),speed:document.getElementById('speed'),tuning:document.getElementById('tuning'),capo:document.getElementById('capo'),lock:document.getElementById('lockBtn'),exportMidi:document.getElementById('exportMidi'),exportTab:document.getElementById('exportTab'),note:document.getElementById('noteDisplay'),freq:document.getElementById('freqDisplay'),clarity:document.getElementById('clarityDisplay'),tempo:document.getElementById('tempoDisplay'),chord:document.getElementById('chordDisplay'),status:document.getElementById('statusDisplay'),tab:document.getElementById('tabOutput'),file:document.getElementById('fileInput'),transDown:document.getElementById('transDown'),transUp:document.getElementById('transUp'),transVal:document.getElementById('transVal')};
 const fretC=document.getElementById('fretCanvas'), timeC=document.getElementById('timelineCanvas'), waveC=document.getElementById('waveCanvas'), corrC=document.getElementById('corrCanvas'), metC=document.getElementById('metricsCanvas');
 const fctx=fretC.getContext('2d'), tctx=timeC.getContext('2d'), wctx=waveC.getContext('2d'), cctx=corrC.getContext('2d'), mctx=metC.getContext('2d');
 
-function resize(){const w=document.querySelector('.app').clientWidth-24; [fretC,timeC,waveC,corrC,metC].forEach(c=>{c.width=w; c.height=c===fretC?160:c===timeC?140:70}); drawAll();}
+function resize(){const w=document.querySelector('.app').clientWidth-24; const phone=window.innerWidth<=800; [fretC,timeC,waveC,corrC,metC].forEach(c=>{c.width=w; c.height=c===fretC?(phone?140:160):c===timeC?(phone?120:140):(phone?50:70)}); drawAll();}
 window.addEventListener('resize',resize); resize();
 
 function effectiveMidi(n){return Math.max(0,Math.min(127,n.midi+transpose+capo));}
@@ -131,6 +139,7 @@ els.transDown.onclick=()=>{transpose--; updateTrans();};
 els.transUp.onclick=()=>{transpose++; updateTrans();};
 els.lock.onclick=()=>{lockPos=!lockPos; els.lock.classList.toggle('active',lockPos); els.status.textContent=lockPos?'pos locked':'pos free';};
 els.clear.onclick=()=>{notes=[]; selected=-1; onsets=[]; pitchTrail=[]; render();};
+els.delNote.onclick=()=>{if(selected>=0){notes.splice(selected,1); selected=-1; render();}};
 els.quant.onclick=quantize;
 els.play.onclick=playNotes;
 els.loop.onclick=()=>{isLooping=!isLooping; els.loop.classList.toggle('active',isLooping);};
@@ -339,27 +348,54 @@ function drawMetrics(rms,cl,st,pc){const w=metC.width,h=metC.height; mctx.clearR
 function drawWave(buf){const w=waveC.width,h=waveC.height; wctx.clearRect(0,0,w,h); wctx.fillStyle='#050508'; wctx.fillRect(0,0,w,h); wctx.strokeStyle='#00ff87'; wctx.beginPath(); const step=Math.floor(buf.length/w); for(let i=0;i<w;i++){const y=h/2+(buf[i*step]||0)*h*0.4; if(i===0)wctx.moveTo(i,y); else wctx.lineTo(i,y);} wctx.stroke();}
 function drawAll(){drawFret(); drawTimeline(); drawCorr(); drawMetrics(0,0,0,0); drawWave(new Float32Array(1024));}
 
-// timeline interaction: click select, drag to move in time, wheel pitch, right-click delete
+// timeline interaction: tap/click select, drag to move in time,
+// drag up/down to change pitch (12 px per semitone on screen),
+// wheel pitch and right-click delete still work on desktop,
+// DEL NOTE deletes the selected note on any device.
 function timeAtEvent(e){
   const rect=timeC.getBoundingClientRect();
   const x=(e.clientX-rect.left)*(timeC.width/rect.width);
   const maxT=Math.max(...notes.map(n=>n.start+n.dur),4);
   return x/(timeC.width/maxT);
 }
-timeC.onmousedown=e=>{
+function timeYAtEvent(e){
+  const rect=timeC.getBoundingClientRect();
+  return (e.clientY-rect.top)*(timeC.height/rect.height);
+}
+function timelinePress(e){
   if(!notes.length) return;
   const t=timeAtEvent(e);
   selected=notes.findIndex(n=>t>=n.start&&t<=n.start+n.dur);
-  if(selected>=0){dragIndex=selected; dragStartT=t; dragOrigStart=notes[selected].start;}
+  if(selected>=0){dragIndex=selected; dragStartT=t; dragOrigStart=notes[selected].start; dragStartY=timeYAtEvent(e); dragStartMidi=notes[selected].midi; dragMode='';}
   render();
-};
-timeC.onmousemove=e=>{
+}
+function timelineDrag(e){
   if(dragIndex<0) return;
   const t=timeAtEvent(e);
-  notes[dragIndex].start=Math.max(0,dragOrigStart+(t-dragStartT));
+  const rect=timeC.getBoundingClientRect();
+  const maxT=Math.max(...notes.map(n=>n.start+n.dur),4);
+  const dxPx=(t-dragStartT)*(timeC.width/maxT);
+  const dy=timeYAtEvent(e)-dragStartY;
+  // Decide once per drag so a horizontal time drag does not
+  // accidentally change pitch from a little vertical drift, and vice versa.
+  if(!dragMode){
+    if(Math.abs(dy)>24&&Math.abs(dy)>Math.abs(dxPx)) dragMode='pitch';
+    else if(Math.abs(dxPx)>8) dragMode='time';
+    else return;
+  }
+  if(dragMode==='pitch'){
+    notes[dragIndex].midi=dragStartMidi+Math.round(-dy/12);
+  }else{
+    notes[dragIndex].start=Math.max(0,dragOrigStart+(t-dragStartT));
+  }
   render();
-};
-window.addEventListener('mouseup',()=>{dragIndex=-1;});
+}
+timeC.onmousedown=e=>{timelinePress(e);};
+timeC.onmousemove=e=>{timelineDrag(e);};
+window.addEventListener('mouseup',()=>{dragIndex=-1; dragMode='';});
+timeC.addEventListener('touchstart',e=>{e.preventDefault(); if(e.touches.length) timelinePress(e.touches[0]);},{passive:false});
+timeC.addEventListener('touchmove',e=>{e.preventDefault(); if(e.touches.length) timelineDrag(e.touches[0]);},{passive:false});
+timeC.addEventListener('touchend',()=>{dragIndex=-1; dragMode='';});
 timeC.onwheel=e=>{if(selected<0)return; e.preventDefault(); notes[selected].midi+=e.deltaY>0?-1:1; render();};
 timeC.oncontextmenu=e=>{e.preventDefault(); if(selected>=0){notes.splice(selected,1); selected=-1; render();}};
 
