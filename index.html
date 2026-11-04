@@ -18,8 +18,10 @@ body{background:var(--bg);color:#e0e0e0;font-family:'Courier New',Consolas,monos
 .nexus-chip{font-size:10px;color:var(--neon-y);background:#1a1a22;padding:2px 6px;border-radius:4px;display:inline-block;margin-bottom:4px}
 .app{padding:12px;max-width:1280px;margin:0 auto}
 h2{color:var(--neon-c);text-shadow:0 0 8px var(--neon-c);font-size:18px;margin:8px 0 12px;letter-spacing:1px}
-.controls{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center}
-button,select,input{background:#1a1a22;color:var(--neon-g);border:1px solid var(--neon-g);padding:6px 10px;border-radius:4px;font-family:inherit;font-size:12px;cursor:pointer;box-shadow:0 0 6px rgba(0,255,135,.3)}
+.controls{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.control-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.control-row .row-label{font-size:10px;color:var(--neon-c);letter-spacing:1px;min-width:64px}
+button,select,input,a.btn{background:#1a1a22;color:var(--neon-g);border:1px solid var(--neon-g);padding:6px 10px;border-radius:4px;font-family:inherit;font-size:12px;cursor:pointer;box-shadow:0 0 6px rgba(0,255,135,.3);text-decoration:none;display:inline-block}
 button.active{background:var(--neon-p);color:#fff;border-color:var(--neon-p)}
 .live-info{background:var(--panel);border:1px solid #333;padding:6px 10px;border-radius:6px;margin-bottom:10px;font-size:13px;display:flex;flex-wrap:wrap;gap:12px}
 .live-info span{color:var(--neon-y)}
@@ -47,24 +49,37 @@ canvas{display:block;background:#050508;border:1px solid #222;border-radius:6px;
 <div class="app">
   <h2>FRET TRACE · Capture · Time · Edit · Play</h2>
   <div class="controls">
-    <button id="micBtn">🎤 MIC</button>
-    <label><button type="button" onclick="document.getElementById('fileInput').click()">📁 FILE</button><input type="file" id="fileInput" accept="audio/*" style="display:none"></label>
-    <button id="recBtn">● REC</button>
-    <button id="testBtn">▶ TEST</button>
-    <button id="bendTestBtn">▶ B/S TEST</button>
-    <button id="clearBtn">CLEAR</button>
-    <button id="quantBtn">QUANT</button>
-    <button id="playBtn">▶ PLAY</button>
-    <button id="loopBtn">LOOP</button>
-    <select id="speed"><option value="1">1.0x</option><option value="0.75">0.75x</option><option value="0.5">0.5x</option></select>
-    <button id="transDown">−</button>
-    <span id="transVal" style="min-width:24px;text-align:center;color:var(--neon-y);">0</span>
-    <button id="transUp">+</button>
-    <select id="tuning"><option value="standard">Std EADGBE</option><option value="dropd">Drop D</option><option value="dadgad">DADGAD</option><option value="openG">Open G</option></select>
-    <label style="font-size:11px;color:#aaa">Capo <input id="capo" type="number" min="0" max="12" value="0" style="width:40px"></label>
-    <button id="lockBtn">LOCK POS</button>
-    <button id="exportMidi">MIDI</button>
-    <button id="exportTab">COPY TAB</button>
+    <div class="control-row"><span class="row-label">INPUT</span>
+      <button id="micBtn">🎤 MIC</button>
+      <label><button type="button" onclick="document.getElementById('fileInput').click()">📁 FILE</button><input type="file" id="fileInput" accept="audio/*" style="display:none"></label>
+      <button id="recBtn">● REC</button>
+    </div>
+    <div class="control-row"><span class="row-label">TEST</span>
+      <button id="testBtn">▶ TEST</button>
+      <button id="bendTestBtn">▶ B/S TEST</button>
+      <a class="btn" href="test-notebook.html" target="_blank" rel="noopener">📓 NOTEBOOK</a>
+    </div>
+    <div class="control-row"><span class="row-label">EDIT</span>
+      <button id="clearBtn">CLEAR</button>
+      <button id="quantBtn">QUANT</button>
+      <button id="lockBtn">LOCK POS</button>
+    </div>
+    <div class="control-row"><span class="row-label">PLAY</span>
+      <button id="playBtn">▶ PLAY</button>
+      <button id="loopBtn">LOOP</button>
+      <select id="speed"><option value="1">1.0x</option><option value="0.75">0.75x</option><option value="0.5">0.5x</option></select>
+    </div>
+    <div class="control-row"><span class="row-label">TUNE</span>
+      <button id="transDown">−</button>
+      <span id="transVal" style="min-width:24px;text-align:center;color:var(--neon-y);">0</span>
+      <button id="transUp">+</button>
+      <select id="tuning"><option value="standard">Std EADGBE</option><option value="dropd">Drop D</option><option value="dadgad">DADGAD</option><option value="openG">Open G</option></select>
+      <label style="font-size:11px;color:#aaa">Capo <input id="capo" type="number" min="0" max="12" value="0" style="width:40px"></label>
+    </div>
+    <div class="control-row"><span class="row-label">EXPORT</span>
+      <button id="exportMidi">MIDI</button>
+      <button id="exportTab">COPY TAB</button>
+    </div>
   </div>
   <div class="live-info">
     <div>NOTE <span id="noteDisplay">—</span></div>
