@@ -51,6 +51,7 @@ canvas{display:block;background:#050508;border:1px solid #222;border-radius:6px;
     <label><button type="button" onclick="document.getElementById('fileInput').click()">📁 FILE</button><input type="file" id="fileInput" accept="audio/*" style="display:none"></label>
     <button id="recBtn">● REC</button>
     <button id="testBtn">▶ TEST</button>
+    <button id="bendTestBtn">▶ B/S TEST</button>
     <button id="clearBtn">CLEAR</button>
     <button id="quantBtn">QUANT</button>
     <button id="playBtn">▶ PLAY</button>
@@ -82,7 +83,7 @@ canvas{display:block;background:#050508;border:1px solid #222;border-radius:6px;
     <div><div class="monitor-label">WAVEFORM</div><canvas id="waveCanvas"></canvas></div>
   </div>
   <div class="tab-display" id="tabOutput">Ready. Record a clear single-note line. Quantize. Edit on the timeline. Lock position. Export MIDI or tab.</div>
-  <p class="note-hint">Monophonic: it tracks the strongest single pitch, best on clear leads and solos. The ROOT box is just that note's root, not a detected chord — a real chord needs more than one pitch at once. Transpose shifts live input and captured notes. Capo now applies to tab, playback, and MIDI. Your last capture is saved on this device and restored on reload. TEST needs no file download: it plays E2 A2 D3 G3 B3 E4 G3 E2 inside the app and captures them, so the tab should read that order.</p>
+  <p class="note-hint">Monophonic: it tracks the strongest single pitch, best on clear leads and solos. The ROOT box is just that note's root, not a detected chord — a real chord needs more than one pitch at once. Transpose shifts live input and captured notes. Capo now applies to tab, playback, and MIDI. Your last capture is saved on this device and restored on reload. TEST needs no file download: it plays E2 A2 D3 G3 B3 E4 G3 E2 inside the app and captures them, so the tab should read that order. B/S TEST plays a slide A2 to D3, then a D3 bend up about 3 semitones and back. In the tab, a note ending in s was slid into, and a note ending in b was bent — slide means a smooth glide with no new attack in between, bend means the pitch rose and returned to the same note.</p>
 </div>
 <script>
 const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
@@ -98,8 +99,9 @@ let lastStable=null, stableCount=0, onsets=[], lastRms=0, prevRms=0;
 let lastCorr=null, lastPeak=0, playbackNodes=[];
 let recordingStart=0;
 let dragIndex=-1, dragStartT=0, dragOrigStart=0;
+let pitchTrail=[]; // {t (seconds from REC press), midi (raw)} during recording, for bend/slide analysis
 
-const els={mic:document.getElementById('micBtn'),rec:document.getElementById('recBtn'),test:document.getElementById('testBtn'),clear:document.getElementById('clearBtn'),quant:document.getElementById('quantBtn'),play:document.getElementById('playBtn'),loop:document.getElementById('loopBtn'),speed:document.getElementById('speed'),tuning:document.getElementById('tuning'),capo:document.getElementById('capo'),lock:document.getElementById('lockBtn'),exportMidi:document.getElementById('exportMidi'),exportTab:document.getElementById('exportTab'),note:document.getElementById('noteDisplay'),freq:document.getElementById('freqDisplay'),clarity:document.getElementById('clarityDisplay'),tempo:document.getElementById('tempoDisplay'),chord:document.getElementById('chordDisplay'),status:document.getElementById('statusDisplay'),tab:document.getElementById('tabOutput'),file:document.getElementById('fileInput'),transDown:document.getElementById('transDown'),transUp:document.getElementById('transUp'),transVal:document.getElementById('transVal')};
+const els={mic:document.getElementById('micBtn'),rec:document.getElementById('recBtn'),test:document.getElementById('testBtn'),bendTest:document.getElementById('bendTestBtn'),clear:document.getElementById('clearBtn'),quant:document.getElementById('quantBtn'),play:document.getElementById('playBtn'),loop:document.getElementById('loopBtn'),speed:document.getElementById('speed'),tuning:document.getElementById('tuning'),capo:document.getElementById('capo'),lock:document.getElementById('lockBtn'),exportMidi:document.getElementById('exportMidi'),exportTab:document.getElementById('exportTab'),note:document.getElementById('noteDisplay'),freq:document.getElementById('freqDisplay'),clarity:document.getElementById('clarityDisplay'),tempo:document.getElementById('tempoDisplay'),chord:document.getElementById('chordDisplay'),status:document.getElementById('statusDisplay'),tab:document.getElementById('tabOutput'),file:document.getElementById('fileInput'),transDown:document.getElementById('transDown'),transUp:document.getElementById('transUp'),transVal:document.getElementById('transVal')};
 const fretC=document.getElementById('fretCanvas'), timeC=document.getElementById('timelineCanvas'), waveC=document.getElementById('waveCanvas'), corrC=document.getElementById('corrCanvas'), metC=document.getElementById('metricsCanvas');
 const fctx=fretC.getContext('2d'), tctx=timeC.getContext('2d'), wctx=waveC.getContext('2d'), cctx=corrC.getContext('2d'), mctx=metC.getContext('2d');
 
@@ -113,7 +115,7 @@ els.capo.oninput=e=>{capo=+e.target.value||0; render();};
 els.transDown.onclick=()=>{transpose--; updateTrans();};
 els.transUp.onclick=()=>{transpose++; updateTrans();};
 els.lock.onclick=()=>{lockPos=!lockPos; els.lock.classList.toggle('active',lockPos); els.status.textContent=lockPos?'pos locked':'pos free';};
-els.clear.onclick=()=>{notes=[]; selected=-1; onsets=[]; render();};
+els.clear.onclick=()=>{notes=[]; selected=-1; onsets=[]; pitchTrail=[]; render();};
 els.quant.onclick=quantize;
 els.play.onclick=playNotes;
 els.loop.onclick=()=>{isLooping=!isLooping; els.loop.classList.toggle('active',isLooping);};
@@ -124,11 +126,12 @@ els.rec.onclick=()=>{
   els.rec.classList.toggle('active',isRecording);
   els.rec.textContent=isRecording?'■ STOP':'● REC';
   els.status.textContent=isRecording?'recording':'idle';
-  if(isRecording){recordingStart=performance.now(); onsets=[]; lastStable=null; stableCount=0;}
-  else estimateTempo();
+  if(isRecording){recordingStart=performance.now(); onsets=[]; pitchTrail=[]; lastStable=null; stableCount=0;}
+  else {analyzeGlides(); estimateTempo();}
 };
 els.file.onchange=handleFile;
 els.test.onclick=runTestTones;
+els.bendTest.onclick=runBendSlideTest;
 els.mic.onclick=toggleMic;
 
 function autoCorrelate(buf,sr){
@@ -180,6 +183,10 @@ function loop(){
     positions=getPositions(shown,currentTuning);
     els.note.textContent=note; els.freq.textContent=r.freq.toFixed(1); els.clarity.textContent=r.clarity.toFixed(2); els.chord.textContent=root;
   }else{ els.note.textContent='—'; els.freq.textContent='—'; els.clarity.textContent=r.clarity.toFixed(2); els.chord.textContent='—'; }
+  if(isRecording&&rawMidi!==null&&r.rms>0.02){
+    pitchTrail.push({t:Math.max(0,(performance.now()-recordingStart)/1000),midi:rawMidi});
+    if(pitchTrail.length>20000) pitchTrail.shift();
+  }
   // Onset only on an energy rise, not on every frame, so tempo is not just the frame rate.
   if(isRecording&&r.rms>0.02&&prevRms<0.015){
     const now=performance.now();
@@ -203,6 +210,53 @@ function loop(){
   }
   drawFret(positions); drawCorr(); drawMetrics(r.rms,r.clarity,stableCount,positions.length); drawWave(buf);
   anim=requestAnimationFrame(loop);
+}
+function analyzeGlides(){
+  // Slide: a run of captured notes, each under 0.45 s after the last,
+  // moving monotonically in one direction, with no onset (new attack)
+  // in between. Keep the first and last notes, mark the last as slid into,
+  // drop the intermediates. A 2-note run counts only if it moves at least 2 semitones.
+  // Bend: for a remaining note, the pitch trail rises at least 1 semitone
+  // from that note and returns to within 0.5 semitone before the next note.
+  if(!notes.length) return;
+  const merged=[];
+  let i=0;
+  while(i<notes.length){
+    const run=[notes[i]];
+    let j=i+1;
+    while(j<notes.length){
+      const prev=run[run.length-1], cur=notes[j];
+      const dt=cur.start-prev.start;
+      const dpitch=cur.midi-prev.midi;
+      if(dt>0.45||dt<0||dpitch===0) break;
+      if(run.length>1){
+        const prevDir=Math.sign(prev.midi-run[run.length-2].midi);
+        if(Math.sign(dpitch)!==prevDir) break;
+      }
+      const hasOnset=onsets.some(o=>{const t=(o-recordingStart)/1000; return t>prev.start&&t<cur.start;});
+      if(hasOnset) break;
+      run.push(cur); j++;
+    }
+    if(run.length>=3||(run.length===2&&Math.abs(run[run.length-1].midi-run[0].midi)>=2)){
+      const first=run[0], last=run[run.length-1];
+      last.slide=true;
+      merged.push(first,last);
+    }else{
+      merged.push(...run);
+    }
+    i=j;
+  }
+  notes=merged;
+  notes.forEach((n,idx)=>{
+    const nextStart=idx+1<notes.length?notes[idx+1].start:(pitchTrail.length?pitchTrail[pitchTrail.length-1].t:n.start+n.dur);
+    const seg=pitchTrail.filter(p=>p.t>=n.start&&p.t<nextStart);
+    if(seg.length<5) return;
+    let maxDev=0;
+    seg.forEach(p=>{maxDev=Math.max(maxDev,Math.abs(p.midi-n.midi));});
+    const tail=seg.slice(Math.floor(seg.length*0.66));
+    const returns=tail.some(p=>Math.abs(p.midi-n.midi)<0.5);
+    if(maxDev>=1&&returns) n.bend=Math.round(maxDev);
+  });
 }
 function estimateTempo(){
   if(onsets.length<4){tempo=120; els.tempo.textContent=tempo; return;}
@@ -234,10 +288,14 @@ function render(){
     if(lastBar>=0&&bar>lastBar){for(let s=0;s<6;s++) lines[s]+='|';}
     lastBar=bar;
     const fs=ch?String(ch.fret).padStart(2,' '):'--';
-    for(let s=0;s<6;s++) lines[5-s]+=(ch&&ch.string===s?fs:'--')+'-';
+    const sep=ch?(n.slide?'s':(n.bend?'b':'-')):'-';
+    for(let s=0;s<6;s++) lines[5-s]+=(ch&&ch.string===s?fs:'--')+(ch&&ch.string===s?sep:'-');
   });
   lines.forEach((l,i)=>lines[i]+='|');
-  els.tab.textContent=`NEXUS FRET TRACE  |  tempo ${tempo}  |  transpose ${transpose}  |  capo ${capo}  |  ${notes.length} notes\n`+lines.join('\n');
+  let tabText=`NEXUS FRET TRACE  |  tempo ${tempo}  |  transpose ${transpose}  |  capo ${capo}  |  ${notes.length} notes\n`+lines.join('\n');
+  const bends=notes.filter(n=>n.bend).map(n=>midiToNote(effectiveMidi(n))+` +${n.bend}`).join(', ');
+  if(bends) tabText+=`\nBends: ${bends}`;
+  els.tab.textContent=tabText;
   drawTimeline(); saveLocal();
 }
 function drawFret(positions=[]){
@@ -364,7 +422,7 @@ function runTestTones(){
     bufferSource=audioCtx.createBufferSource(); bufferSource.buffer=testBuf;
     analyser=audioCtx.createAnalyser(); analyser.fftSize=2048;
     bufferSource.connect(analyser); bufferSource.connect(audioCtx.destination);
-    notes=[]; selected=-1; onsets=[]; lastStable=null; stableCount=0; prevRms=0;
+    notes=[]; selected=-1; onsets=[]; pitchTrail=[]; lastStable=null; stableCount=0; prevRms=0;
     bufferSource.start(0);
     isListening=true; isRecording=true; recordingStart=performance.now();
     els.rec.classList.add('active'); els.rec.textContent='■ STOP';
@@ -375,11 +433,64 @@ function runTestTones(){
       isListening=false; isRecording=false;
       els.rec.classList.remove('active'); els.rec.textContent='● REC';
       els.test.classList.remove('active');
-      estimateTempo();
+      analyzeGlides(); estimateTempo();
       els.status.textContent='test done - tab should read E2 A2 D3 G3 B3 E4 G3 E2';
       render();
     };
   }catch(err){els.status.textContent='test failed';}
+}
+function runBendSlideTest(){
+  // No guitar needed: A2 held, a smooth log-frequency glide to D3
+  // (no silence, no new attack), D3 held, then a bend up to F3 and
+  // back to D3, then D3 held. Expected result: A2, then D3 marked s,
+  // then D3 marked b (about 3 semitones).
+  stop();
+  try{
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const sr=audioCtx.sampleRate;
+    const segs=[
+      {type:'hold',freq:110,dur:0.6},
+      {type:'glide',from:110,to:146.83,dur:0.4},
+      {type:'hold',freq:146.83,dur:0.6},
+      {type:'glide',from:146.83,to:174.61,dur:0.3},
+      {type:'glide',from:174.61,to:146.83,dur:0.3},
+      {type:'hold',freq:146.83,dur:0.6},
+    ];
+    const totalSec=segs.reduce((a,s)=>a+s.dur,0);
+    const testBuf=audioCtx.createBuffer(1,Math.floor(sr*totalSec),sr);
+    const data=testBuf.getChannelData(0);
+    let pos=0, phase=0;
+    segs.forEach(seg=>{
+      const n=Math.floor(seg.dur*sr);
+      for(let i=0;i<n;i++){
+        let freq;
+        if(seg.type==='hold') freq=seg.freq;
+        else freq=Math.exp(Math.log(seg.from)+(Math.log(seg.to)-Math.log(seg.from))*(i/n));
+        phase+=2*Math.PI*freq/sr;
+        const fade=Math.min(1,(pos+i)/(sr*0.01),(Math.floor(sr*totalSec)-(pos+i))/(sr*0.01));
+        data[pos+i]=0.5*fade*Math.sin(phase);
+      }
+      pos+=n;
+    });
+    bufferSource=audioCtx.createBufferSource(); bufferSource.buffer=testBuf;
+    analyser=audioCtx.createAnalyser(); analyser.fftSize=2048;
+    bufferSource.connect(analyser); bufferSource.connect(audioCtx.destination);
+    notes=[]; selected=-1; onsets=[]; pitchTrail=[]; lastStable=null; stableCount=0; prevRms=0;
+    bufferSource.start(0);
+    isListening=true; isRecording=true; recordingStart=performance.now();
+    els.rec.classList.add('active'); els.rec.textContent='■ STOP';
+    els.bendTest.classList.add('active');
+    els.status.textContent='bend/slide test playing - expected A2, D3 slid into, D3 bent';
+    loop();
+    bufferSource.onended=()=>{
+      isListening=false; isRecording=false;
+      els.rec.classList.remove('active'); els.rec.textContent='● REC';
+      els.bendTest.classList.remove('active');
+      analyzeGlides(); estimateTempo();
+      els.status.textContent='bend/slide test done - look for s on D3 and b on D3';
+      render();
+    };
+  }catch(err){els.status.textContent='bend/slide test failed';}
 }
 async function toggleMic(){
   if(isListening&&stream){stop(); return;}
