@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Fret Trace Live Test Notebook</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Patrick+Hand&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --paper: #fdfcf6;
+        --paper-edge: #f3f0e2;
+        --ink: #26303e;
+        --ink-soft: #4c5a6d;
+        --rule: rgba(84, 132, 196, 0.28);
+        --margin-line: rgba(224, 92, 92, 0.55);
+        --hole: #e7e3d2;
+        --hole-shadow: rgba(38, 48, 62, 0.18);
+        --accent: #b3402e;
+        --accent-ink: #ffffff;
+        --sticky: #fff3b8;
+        --sticky-ink: #4a3f14;
+        --sticky-line: rgba(120, 100, 20, 0.25);
+        --tape: rgba(240, 214, 120, 0.55);
+        --box-border: #26303e;
+        --note-chip: #eaf1fb;
+        --note-chip-ink: #1d3f73;
+        --btn-ghost: #ffffff;
+        --shadow: 0 10px 30px rgba(38, 48, 62, 0.14);
+        --field-bg: rgba(255, 255, 255, 0.55);
+        --pass: #2e7d43;
+        --close: #b97f16;
+        --miss: #b3402e;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --paper: #1d222b;
+          --paper-edge: #171b22;
+          --ink: #e8e6da;
+          --ink-soft: #b3bac6;
+          --rule: rgba(120, 160, 220, 0.16);
+          --margin-line: rgba(255, 120, 120, 0.35);
+          --hole: #12151b;
+          --hole-shadow: rgba(0, 0, 0, 0.5);
+          --accent: #e0684f;
+          --accent-ink: #ffffff;
+          --sticky: #3d371c;
+          --sticky-ink: #f2e3ac;
+          --sticky-line: rgba(242, 227, 172, 0.2);
+          --tape: rgba(214, 186, 90, 0.28);
+          --box-border: #e8e6da;
+          --note-chip: #26344d;
+          --note-chip-ink: #bcd4f7;
+          --btn-ghost: #262c38;
+          --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+          --field-bg: rgba(255, 255, 255, 0.04);
+          --pass: #5cbf7c;
+          --close: #e0aa45;
+          --miss: #e0684f;
+        }
+      }
+
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--paper-edge);
+        color: var(--ink);
+        font-family: "Patrick Hand", "Segoe UI", system-ui, sans-serif;
+        font-size: 17px;
+        line-height: 1.5;
+      }
+
+      /* ---------- the notebook sheet ---------- */
+      .sheet {
+        position: relative;
+        max-width: 760px;
+        margin: 0 auto;
+        min-height: 100vh;
+        background-color: var(--paper);
+        background-image: repeating-linear-gradient(
+          to bottom,
+          transparent 0,
+          transparent 31px,
+          var(--rule) 31px,
+          var(--rule) 32px
+        );
+        background-position: 0 12px;
+        box-shadow: var(--shadow);
+        padding: 28px 20px 40px 58px;
+      }
+      /* red margin line */
+      .sheet::before {
+        content: "";
+        position: absolute;
+        top: 0; bottom: 0;
+        left: 44px;
+        width: 2px;
+        background: var(--margin-line);
+      }
+      /* spiral holes */
+      .sheet::after {
+        content: "";
+        position: absolute;
+        top: 18px; bottom: 0;
+        left: 12px;
+        width: 20px;
+        background-image: radial-gradient(circle at 10px 10px, var(--hole) 7px, var(--hole-shadow) 8px, transparent 9px);
+        background-size: 20px 64px;
+        background-repeat: repeat-y;
+        pointer-events: none;
+      }
+      @media (max-width: 480px) {
+        .sheet { padding: 22px 14px 34px 48px; }
+        .sheet::before { left: 36px; }
+        .sheet::after { left: 7px; }
+        body { font-size: 16px; }
+      }
+
+      /* ---------- header ---------- */
+      .kicker {
+        font-family: "Space Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin: 0 0 2px;
+      }
+      h1 {
+        font-family: "Caveat", cursive;
+        font-weight: 700;
+        font-size: clamp(38px, 9vw, 56px);
+        line-height: 1.02;
+        margin: 0 0 6px;
+      }
+      .sub {
+        color: var(--ink-soft);
+        margin: 0 0 4px;
+        font-size: 18px;
+      }
+      .meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 22px;
+        margin: 10px 0 0;
+        font-size: 16px;
+        color: var(--ink-soft);
+      }
+      .meta-row b { color: var(--ink); font-weight: 400; border-bottom: 2px dotted var(--ink-soft); padding: 0 6px 1px; }
+      .repo-link {
+        display: inline-block;
+        margin-top: 12px;
+        color: var(--note-chip-ink);
+        background: var(--note-chip);
+        text-decoration: none;
+        padding: 6px 14px;
+        border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+        border: 1.5px solid var(--note-chip-ink);
+        font-size: 15px;
+      }
+      .repo-link:active { transform: scale(0.97); }
+
+      /* progress doodle */
+      .progress-wrap {
+        margin: 20px 0 4px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .progress-track {
+        flex: 1;
+        height: 12px;
+        border: 2px solid var(--box-border);
+        border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+        overflow: hidden;
+        background: var(--field-bg);
+      }
+      .progress-fill {
+        height: 100%;
+        width: 0%;
+        background: var(--accent);
+        transition: width 0.35s ease;
+      }
+      .progress-label {
+        font-family: "Caveat", cursive;
+        font-size: 21px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .progress-fill { transition: none; }
+      }
+
+      /* ---------- sections ---------- */
+      section.test {
+        position: relative;
+        margin-top: 38px;
+        padding-top: 6px;
+      }
+      .tape {
+        position: absolute;
+        top: -14px;
+        right: 18px;
+        width: 96px;
+        height: 24px;
+        background: var(--tape);
+        transform: rotate(3deg);
+        border-radius: 2px;
+      }
+      .test-head {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .test-num {
+        font-family: "Caveat", cursive;
+        font-weight: 700;
+        font-size: 30px;
+        color: var(--accent-ink);
+        background: var(--accent);
+        width: 44px; height: 44px;
+        flex: 0 0 44px;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50% 46% 52% 48% / 48% 52% 46% 54%;
+        transform: rotate(-4deg);
+        align-self: center;
+      }
+      h2 {
+        font-family: "Caveat", cursive;
+        font-weight: 700;
+        font-size: clamp(30px, 7vw, 40px);
+        line-height: 1.05;
+        margin: 0;
+      }
+      .status-note {
+        font-family: "Caveat", cursive;
+        font-size: 21px;
+        font-weight: 600;
+        color: var(--accent);
+        margin: 2px 0 0;
+      }
+      .what {
+        color: var(--ink-soft);
+        margin: 8px 0 0;
+      }
+
+      /* note sequence chips */
+      .seq {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin: 14px 0 4px;
+      }
+      .seq span {
+        font-family: "Space Mono", monospace;
+        font-weight: 700;
+        font-size: 15px;
+        background: var(--note-chip);
+        color: var(--note-chip-ink);
+        border: 1.5px solid var(--note-chip-ink);
+        border-radius: 8px;
+        padding: 3px 10px;
+      }
+      .seq span.mark { background: var(--sticky); color: var(--sticky-ink); border-color: var(--sticky-ink); }
+      .seq .arrow { background: none; border: none; color: var(--ink-soft); padding: 3px 0; font-weight: 400; }
+
+      h3 {
+        font-family: "Caveat", cursive;
+        font-size: 25px;
+        font-weight: 700;
+        margin: 20px 0 6px;
+      }
+
+      /* checklist */
+      ul.steps { list-style: none; margin: 0; padding: 0; }
+      ul.steps li { margin: 0; }
+      ul.steps label {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 9px 6px;
+        cursor: pointer;
+        border-radius: 10px;
+        -webkit-tap-highlight-color: transparent;
+      }
+      ul.steps label:active { background: var(--field-bg); }
+      ul.steps input[type="checkbox"] {
+        appearance: none;
+        -webkit-appearance: none;
+        flex: 0 0 27px;
+        width: 27px; height: 27px;
+        margin: 1px 0 0;
+        border: 2.5px solid var(--box-border);
+        border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+        background: var(--field-bg);
+        cursor: pointer;
+        position: relative;
+      }
+      ul.steps input[type="checkbox"]:checked {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+      ul.steps input[type="checkbox"]:checked::after {
+        content: "";
+        position: absolute;
+        left: 8px; top: 3px;
+        width: 7px; height: 13px;
+        border: solid #fff;
+        border-width: 0 3.5px 3.5px 0;
+        transform: rotate(42deg);
+      }
+      ul.steps input[type="checkbox"]:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+      ul.steps input[type="checkbox"]:checked ~ .step-text {
+        color: var(--ink-soft);
+        text-decoration: line-through;
+        text-decoration-thickness: 2px;
+        text-decoration-color: var(--accent);
+      }
+      .step-text { flex: 1; }
+      .step-text .tip { display: block; font-size: 15px; color: var(--ink-soft); }
+
+      /* sticky-note expected result */
+      .expected {
+        background: var(--sticky);
+        color: var(--sticky-ink);
+        border-radius: 4px 4px 14px 4px;
+        box-shadow: 0 4px 10px rgba(38, 48, 62, 0.16);
+        padding: 14px 16px 12px;
+        margin-top: 18px;
+        transform: rotate(-0.6deg);
+      }
+      .expected h3 { margin: 0 0 6px; color: var(--sticky-ink); }
+      .expected ul { margin: 0; padding-left: 20px; }
+      .expected li { margin: 3px 0; }
+      .expected .mono { font-family: "Space Mono", monospace; font-size: 14.5px; font-weight: 700; }
+
+      /* verdict */
+      .verdict { margin-top: 18px; }
+      .verdict .v-label {
+        font-family: "Caveat", cursive;
+        font-size: 23px;
+        font-weight: 700;
+        display: block;
+        margin-bottom: 7px;
+      }
+      .verdict-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+      .verdict-btns button {
+        font-family: "Patrick Hand", sans-serif;
+        font-size: 16px;
+        padding: 8px 18px;
+        background: var(--btn-ghost);
+        color: var(--ink);
+        border: 2px solid var(--box-border);
+        border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .verdict-btns button:active { transform: scale(0.96); }
+      .verdict-btns button[aria-pressed="true"][data-v="pass"] { background: var(--pass); border-color: var(--pass); color: #fff; }
+      .verdict-btns button[aria-pressed="true"][data-v="close"] { background: var(--close); border-color: var(--close); color: #fff; }
+      .verdict-btns button[aria-pressed="true"][data-v="miss"] { background: var(--miss); border-color: var(--miss); color: #fff; }
+
+      /* writing area */
+      .write label {
+        font-family: "Caveat", cursive;
+        font-size: 23px;
+        font-weight: 700;
+        display: block;
+        margin: 18px 0 4px;
+      }
+      .write textarea {
+        width: 100%;
+        min-height: 128px;
+        resize: vertical;
+        font-family: "Patrick Hand", sans-serif;
+        font-size: 17px;
+        line-height: 32px;
+        color: var(--ink);
+        background-color: transparent;
+        background-image: repeating-linear-gradient(
+          to bottom,
+          transparent 0,
+          transparent 31px,
+          var(--rule) 31px,
+          var(--rule) 32px
+        );
+        border: none;
+        border-left: 3px solid var(--margin-line);
+        padding: 2px 4px 2px 12px;
+        outline: none;
+      }
+      .write textarea:focus { background-color: var(--field-bg); }
+      .write textarea::placeholder { color: var(--ink-soft); opacity: 0.75; }
+
+      .divider {
+        border: none;
+        border-top: 3px dashed var(--rule);
+        margin: 40px 0 0;
+      }
+
+      /* prep box */
+      .prep {
+        border: 2.5px solid var(--box-border);
+        border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+        padding: 6px 16px 12px;
+        margin-top: 24px;
+        transform: rotate(-0.3deg);
+      }
+      .prep h2 { font-size: 30px; margin-top: 8px; }
+
+      /* export footer */
+      .export {
+        margin-top: 44px;
+        border-top: 3px dashed var(--rule);
+        padding-top: 22px;
+      }
+      .export p { color: var(--ink-soft); margin: 0 0 14px; }
+      .export-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+      .export-btns button {
+        font-family: "Patrick Hand", sans-serif;
+        font-size: 17px;
+        padding: 11px 20px;
+        border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+        border: 2px solid var(--accent);
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .export-btns .primary { background: var(--accent); color: var(--accent-ink); }
+      .export-btns .ghost { background: var(--btn-ghost); color: var(--accent); border-color: var(--accent); }
+      .export-btns button:active { transform: scale(0.97); }
+      .toast {
+        font-family: "Caveat", cursive;
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--accent);
+        min-height: 30px;
+        margin-top: 10px;
+      }
+      .fineprint { font-size: 14px; color: var(--ink-soft); margin-top: 26px; }
+    </style>
+  </head>
+  <body>
+    <main class="sheet">
+      <p class="kicker">NEXUS Fret Trace · Field Test Log</p>
+      <h1>Live Test Notebook</h1>
+      <p class="sub">Three tests, run on your iPhone, in order. Tick each step as you go, check what you got against the sticky note, then write down what actually happened.</p>
+      <div class="meta-row">
+        <span>Tester: <b>Ant</b></span>
+        <span>Device: <b>iPhone · Safari</b></span>
+        <span>Date: <b id="today">—</b></span>
+      </div>
+      <a class="repo-link" href="https://github.com/AntManThePro/nexus-fret-trace" target="_blank" rel="noopener">Open the Fret Trace repo ↗</a>
+
+      <div class="progress-wrap" aria-live="polite">
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <span class="progress-label" id="progressLabel">0 / 14 steps</span>
+      </div>
+
+      <!-- BEFORE YOU START -->
+      <div class="prep">
+        <h2>Before you start</h2>
+        <ul class="steps">
+          <li>
+            <label>
+              <input type="checkbox" data-step="prep-1" />
+              <span class="step-text">Open Fret Trace on your iPhone in Safari and turn the volume up — Tests 1 and 2 play tones out loud.</span>
+            </label>
+          </li>
+          <li>
+            <label>
+              <input type="checkbox" data-step="prep-2" />
+              <span class="step-text">Keep this notebook open in a second tab so you can flip back and tick steps off as you run each test.</span>
+            </label>
+          </li>
+        </ul>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- TEST 1 -->
+      <section class="test" id="test1">
+        <div class="tape" aria-hidden="true"></div>
+        <div class="test-head">
+          <span class="test-num">1</span>
+          <div>
+            <h2>The Built-In TEST</h2>
+            <p class="status-note">✓ Passed on your iPhone once already — re-run anytime after an update to confirm it still holds.</p>
+          </div>
+        </div>
+        <p class="what">The app plays 8 clean test tones through its own capture path — no file, no download, no guitar. This proves the whole chain (capture → timeline → tab) works in Safari.</p>
+        <div class="seq" aria-label="Expected note sequence">
+          <span>E2</span><span class="arrow">→</span><span>A2</span><span class="arrow">→</span><span>D3</span><span class="arrow">→</span><span>G3</span><span class="arrow">→</span><span>B3</span><span class="arrow">→</span><span>E4</span><span class="arrow">→</span><span>G3</span><span class="arrow">→</span><span>E2</span>
+        </div>
+
+        <h3>Steps</h3>
+        <ul class="steps">
+          <li>
+            <label>
+              <input type="checkbox" data-step="t1-1" />
+              <span class="step-text">Tap the <b>TEST</b> button in Fret Trace.</span>
+            </label>
+          </li>
+          <li>
+            <label>
+              <input type="checkbox" data-step="t1-2" />
+              <span class="step-text">Let it run the full ~6 seconds. Don't tap anything until it finishes.<span class="tip">You'll hear 8 tones, each about 0.6 s with a short gap.</span></span>
+            </label>
+          </li>
+          <li>
+            <label>
+              <input type="checkbox" data-step="t1-3" />
+              <span class="step-text">Read the status line, the tempo, and the tab / timeline it produced.</span>
+            </label>
+          </li>
+        </ul>
+
+        <div class="expected">
+          <h3>Expected result ✎</h3>
+          <ul>
+            <li>Status ends on <span class="mono">"test done"</span></li>
+            <li>Tab reads, in order: <span class="mono">E2 A2 D3 G3 B3 E4 G3 E2</span> — all 8 notes, none missing, none extra</li>
+            <li>Tempo reads about <span class="mono">80</span></li>
+            <li>Clarity sits up around <span class="mono">0.98–0.99</span> during the run</li>
+          </ul>
+        </div>
+
+        <div class="verdict" data-verdict-group="test1">
+          <span class="v-label">Verdict:</span>
+          <div class="verdict-btns">
+            <button type="button" data-v="pass" aria-pressed="false">✓ Passed</button>
+            <button type="button" data-v="close" aria-pressed="false">Close</button>
+            <button type="button" data-v="miss" aria-pressed="false">Missed</button>
+          </div>
+        </div>
+
+        <div class="write">
+          <label for="notes1">What actually happened?</label>
+          <textarea id="notes1" data-notes="Test 1 — Built-In TEST" placeholder="e.g. Tab matched all 8 notes. Tempo 80. One note showed as…"></textarea>
+        </div>
+      </section>
+
+      <hr class="divider" />
+
+      <!-- TEST 2 -->
+      <section class="test" id="test2">
+        <div class="tape" aria-hidden="true"></div>
+        <div class="test-head">
+          <span class="test-num">2</span>
+          <div>
+            <h2>The B/S TEST — Bends &amp; Slides</h2>
+            <p class="status-note">★ This is the one still waiting on its first iPhone run — your run is the real verdict.</p>
+          </div>
+        </div>
+        <p class="what">Also built into the app, no guitar needed. It plays a held note, a smooth slide, and a bend, and the app has to tell the difference between a slide, a bend, and two separate notes.</p>
+        <div class="seq" aria-label="What the B/S test plays">
+          <span>A2 held</span><span class="arrow">→</span><span class="mark">slide up to D3</span><span class="arrow">→</span><span>D3 held</span><span class="arrow">→</span><span class="mark">bend +3, back to D3</span>
+        </div>
+
+        <h3>Steps</h3>
+        <ul class="steps">
+          <li>
+            <label>
+              <input type="checkbox" data-step="t2-1" />
+              <span class="step-text">Tap the <b>B/S TEST</b> button in Fret Trace.</span>
+            </label>
+          </li>
+          <li>
+            <label>
+              <input type="checkbox" data-step="t2-2" />
+              <span class="step-text">Listen for the shape of it: A2 held, a smooth glide up to D3, D3 held, then a bend up about 3 semitones and back down to D3.</span>
+            </label>
+          </li>
+          <li>
+            <label>
+              <input type="checkbox" data-step="t2-3" />
+              <span class="step-text">When it finishes, check the tab for the slide mark, and look for the <b>Bends:</b> line under the tab.</span>
+            </label>
+          </li>
+        </ul>
+
+        <div class="expected">
+          <h3>Expected result ✎</h3>
+          <ul>
+            <li>Tab shows <span class="mono">A2</span>, then <span class="mono">D3</span> marked with an <span class="mono">s</span> (slide)</li>
+            <li>A <span class="mono">Bends:</span> line under the tab reads <span class="mono">D3 +3</span></li>
+            <li>The slide does <b>not</b> explode into a string of separate notes — it collapses to just A2 + D3</li>
+          </ul>
+        </div>
+
+        <div class="verdict" data-verdict-group="test2">
+          <span class="v-label">Verdict:</span>
+          <div class="verdict-btns">
+            <button type="button" data-v="pass" aria-pressed="false">✓ Passed</button>
+            <button type="button" data-v="close" aria-pressed="false">Close</button>
+            <button type="button" data-v="miss" aria-pressed="false">Missed</button>
+          </div>
+        </div>
+
+        <div class="write">
+          <label for="notes2">What actually happened?</label>
+          <textarea id="notes2" data-notes="Test 2 — B/S TEST" placeholder="e.g. Got A2 and D3s, Bends line said +3. Or: slide came out as 4 separate notes…"></textarea>
+        </div>
+      </section>
+
+      <hr class="divider" />
+
+      <!-- TEST 3 -->
+      <section class="test" id="test3">
+        <div class="tape" aria-hidden="true"></div>
+        <div class="test-head">
+          <span class="test-num">3</span>
+          <div>
+            <h2>Real Guitar — Mic Test</h2>
+            <p class="status-note">The big one: the only test that proves a real guitar, in a real room, through the iPhone mic.</p>
+          </div>
+        </div>
+        <p class="what">Clean test tones are easy mode. Strings have harmonics, fingers make noise, rooms echo. Play a clear single-note line — Fret Trace is monophonic, so one note at a time is exactly what it wants.</p>
+
+        <h3>Steps</h3>
+        <ul class="steps">
+          <li>
+            <label>
+              <input type="checkbox" data-step="t3-1" />
+              <span class="step-text">Get set up: guitar in hand, quiet room, phone close to the guitar (or amp) — a foot or two away.<span class="tip">Clean tone helps. No chords, no strumming for this test.</span></span>
+            </label>
+          </li>
+          <li>
+            <label>
+              <input type="checkbox" data-step="t3-2" />
+              <span class="step-text">Tap <b>REC / MIC</b> in Fret Trace and allow microphone access if iOS asks.</span>
+            </label>
+          </li>
+          <li>
+            <label>
+              <input type="checkbox" data-step="t3-3" />
+              <span class="step-text">Play a slow, clear single-note line — pick a line you know cold, one note at a time, and let each note ring before the next.<span class="tip">Write the line you played in the notes below <i>before</i> you check the tab, so you can compare honestly.</span></span>
+            </label>
+          </li>
+          <li>
+            <label>
+              <input type="checkbox" data-step="t3-4" />
+              <span class="step-text">Stop the recording and read the tab against the line you actually played.</span>
+            </label>
+          </li>
+          <li>
+            <label>
+              <input type="checkbox" data-step="t3-5" />
+              <span class="step-text">Try one slide and one bend in the line too, and see whether the <span class="mono" style="font-family:'Space Mono',monospace;">s</span> / <span class="mono" style="font-family:'Space Mono',monospace;">b</span> marks and the Bends line show up.</span>
+            </label>
+          </li>
+        </ul>
+
+        <div class="expected">
+          <h3>Expected result ✎</h3>
+          <ul>
+            <li>The tab matches the line you played — right notes, right order</li>
+            <li>No phantom notes from string noise, and no dropped notes on the quiet ones</li>
+            <li>A slide shows the destination note marked <span class="mono">s</span>; a bend that returns home gets a <span class="mono">b</span> and a Bends line entry</li>
+            <li>Honest limit: it <b>won't</b> catch chords or two notes at once — that's not built yet, not a failure of this test</li>
+          </ul>
+        </div>
+
+        <div class="verdict" data-verdict-group="test3">
+          <span class="v-label">Verdict:</span>
+          <div class="verdict-btns">
+            <button type="button" data-v="pass" aria-pressed="false">✓ Passed</button>
+            <button type="button" data-v="close" aria-pressed="false">Close</button>
+            <button type="button" data-v="miss" aria-pressed="false">Missed</button>
+          </div>
+        </div>
+
+        <div class="write">
+          <label for="notes3">What actually happened?</label>
+          <textarea id="notes3" data-notes="Test 3 — Real Guitar Mic Test" placeholder="Line I played: … / Tab I got: … / Where it missed: …"></textarea>
+        </div>
+      </section>
+
+      <!-- EXPORT -->
+      <div class="export">
+        <h2 style="font-size:32px;">Done? Send yourself the log</h2>
+        <p>Your ticks and notes live on this page while it's open. Export them as a text file (or copy them) before you close it, so the results don't vanish.</p>
+        <div class="export-btns">
+          <button type="button" class="primary" id="downloadBtn">⬇ Download my test log</button>
+          <button type="button" class="ghost" id="copyBtn">Copy log to clipboard</button>
+        </div>
+        <div class="toast" id="toast" role="status"></div>
+        <p class="fineprint">Fret Trace is monophonic by design right now — best on clear leads and solos. Polyphony and a full piano-roll editor are still on the list, whatever these tests say.</p>
+      </div>
+    </main>
+
+    <script>
+      (function () {
+        // Date line — today, in the tester's own timezone.
+        var d = new Date();
+        var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        document.getElementById("today").textContent =
+          months[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear();
+
+        var boxes = Array.prototype.slice.call(document.querySelectorAll('input[type="checkbox"][data-step]'));
+        var fill = document.getElementById("progressFill");
+        var label = document.getElementById("progressLabel");
+
+        function updateProgress() {
+          var done = boxes.filter(function (b) { return b.checked; }).length;
+          label.textContent = done + " / " + boxes.length + " steps";
+          fill.style.width = (boxes.length ? (done / boxes.length) * 100 : 0) + "%";
+          if (done === boxes.length && boxes.length) {
+            label.textContent = "All " + boxes.length + " steps — nice work, Ant ✎";
+          }
+        }
+        boxes.forEach(function (b) { b.addEventListener("change", updateProgress); });
+        updateProgress();
+
+        // Verdict buttons (one active per test, tap again to clear).
+        var verdicts = {};
+        document.querySelectorAll("[data-verdict-group]").forEach(function (group) {
+          var name = group.getAttribute("data-verdict-group");
+          var btns = group.querySelectorAll("button[data-v]");
+          btns.forEach(function (btn) {
+            btn.addEventListener("click", function () {
+              var wasActive = btn.getAttribute("aria-pressed") === "true";
+              btns.forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
+              if (wasActive) {
+                delete verdicts[name];
+              } else {
+                btn.setAttribute("aria-pressed", "true");
+                verdicts[name] = btn.textContent.replace("✓", "").trim();
+              }
+            });
+          });
+        });
+
+        function stepLabel(box) {
+          var t = box.closest("label").querySelector(".step-text");
+          return t ? t.textContent.replace(/\s+/g, " ").trim() : box.getAttribute("data-step");
+        }
+
+        function sectionFor(box) {
+          var sec = box.closest("section.test");
+          if (sec) {
+            var h = sec.querySelector("h2");
+            return h ? h.textContent.trim() : sec.id;
+          }
+          return "Before you start";
+        }
+
+        function buildLog() {
+          var lines = [];
+          lines.push("NEXUS FRET TRACE — LIVE TEST LOG");
+          lines.push("Date: " + document.getElementById("today").textContent);
+          lines.push("Device: iPhone / Safari");
+          lines.push("");
+          var currentSection = null;
+          boxes.forEach(function (box) {
+            var sec = sectionFor(box);
+            if (sec !== currentSection) {
+              currentSection = sec;
+              lines.push("— " + sec + " —");
+            }
+            lines.push((box.checked ? "[x] " : "[ ] ") + stepLabel(box));
+          });
+          lines.push("");
+          var verdictNames = { test1: "Test 1 — Built-In TEST", test2: "Test 2 — B/S TEST", test3: "Test 3 — Real Guitar Mic Test" };
+          Object.keys(verdictNames).forEach(function (key) {
+            lines.push(verdictNames[key] + " verdict: " + (verdicts[key] || "(not marked)"));
+          });
+          lines.push("");
+          document.querySelectorAll("textarea[data-notes]").forEach(function (ta) {
+            lines.push(ta.getAttribute("data-notes") + " — what actually happened:");
+            lines.push(ta.value.trim() ? ta.value.trim() : "(nothing written)");
+            lines.push("");
+          });
+          return lines.join("\n");
+        }
+
+        var toast = document.getElementById("toast");
+        var toastTimer = null;
+        function showToast(msg) {
+          toast.textContent = msg;
+          if (toastTimer) clearTimeout(toastTimer);
+          toastTimer = setTimeout(function () { toast.textContent = ""; }, 3500);
+        }
+
+        document.getElementById("downloadBtn").addEventListener("click", function () {
+          var blob = new Blob([buildLog()], { type: "text/plain" });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement("a");
+          a.href = url;
+          a.download = "fret-trace-test-log.txt";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+          showToast("Log downloaded — check your Files app ✎");
+        });
+
+        document.getElementById("copyBtn").addEventListener("click", function () {
+          var text = buildLog();
+          function fallback() {
+            var ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand("copy"); showToast("Copied — paste it anywhere ✎"); }
+            catch (e) { showToast("Copy didn't work here — use Download instead."); }
+            document.body.removeChild(ta);
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function () {
+              showToast("Copied — paste it anywhere ✎");
+            }, fallback);
+          } else {
+            fallback();
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>
