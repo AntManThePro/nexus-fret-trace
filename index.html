@@ -238,29 +238,66 @@ function loop(){
   anim=requestAnimationFrame(loop);
 }
 function analyzeGlides(){
-  // Slide: a run of captured notes, each under 0.45 s after the last,
-  // moving monotonically in one direction, with no onset (new attack)
-  // in between. Keep the first and last notes, mark the last as slid into,
-  // drop the intermediates. A 2-note run counts only if it moves at least 2 semitones.
-  // Bend: for a remaining note, the pitch trail rises at least 1 semitone
-  // from that note and returns to within 0.5 semitone before the next note.
+  // Order matters: bends first, then slides. A bend is a rise (or fall)
+  // away from a held note and back to that same note, with no new attack
+  // in between. A slide is a monotonic run with no new attack in between.
+  // The old code did it the other way round and used a loose "any point
+  // in the last third of the trail is near home" return test, which is
+  // why the B/S TEST read the first A2->A#2 step of the slide as a
+  // +1 bend on A2, and missed the real D3 bend.
+  // The old slide code also broke a run when the first step took over
+  // 0.45 s. That first step is usually a held note before the glide
+  // starts (A2 held 0.6 s, then gliding), so it is not a glide step at
+  // all. Onset-free monotonic runs are merged regardless of that first
+  // gap; the onset check is what protects genuinely separate notes.
+  // Trade-off, stated honestly: a legato stepwise line played with no
+  // clear attacks will read as a slide, which is how a smooth glide
+  // sounds anyway.
   if(!notes.length) return;
-  const merged=[];
+  const hasOnsetBetween=(a,b)=>onsets.some(o=>{const t=(o-recordingStart)/1000; return t>a.start&&t<b.start;});
+  // 1. Bend collapse: base, monotonic excursion, monotonic return to base.
+  const bent=[];
   let i=0;
   while(i<notes.length){
-    const run=[notes[i]];
+    let collapsed=null;
+    if(i+2<notes.length){
+      const base=notes[i];
+      const dir=Math.sign(notes[i+1].midi-base.midi);
+      if(dir!==0){
+        let j=i+1;
+        while(j<notes.length&&Math.sign(notes[j].midi-notes[j-1].midi)===dir) j++;
+        const peak=notes[j-1];
+        let k=j;
+        while(k<notes.length&&Math.sign(notes[k].midi-notes[k-1].midi)===-dir) k++;
+        const back=notes[k-1];
+        const clean=!hasOnsetBetween(base,back) && !notes.slice(i+1,k).some((n,idx)=>idx>0&&hasOnsetBetween(notes[i+idx],n));
+        if(Math.abs(peak.midi-base.midi)>=1&&back.midi===base.midi&&k-1>j-1&&clean){
+          base.bend=Math.round(Math.abs(peak.midi-base.midi));
+          collapsed=base; i=k;
+        }
+      }
+    }
+    if(collapsed) bent.push(collapsed);
+    else { bent.push(notes[i]); i++; }
+  }
+  // 2. Slide merge: monotonic, onset-free runs. Keep first and last,
+  // mark the last as slid into, drop intermediates. A 2-note run counts
+  // only if it moves at least 2 semitones, so a single stepwise note
+  // is not swallowed by the rule.
+  const merged=[];
+  i=0;
+  while(i<bent.length){
+    const run=[bent[i]];
     let j=i+1;
-    while(j<notes.length){
-      const prev=run[run.length-1], cur=notes[j];
-      const dt=cur.start-prev.start;
+    while(j<bent.length){
+      const prev=run[run.length-1], cur=bent[j];
       const dpitch=cur.midi-prev.midi;
-      if(dt>0.45||dt<0||dpitch===0) break;
+      if(dpitch===0) break;
       if(run.length>1){
         const prevDir=Math.sign(prev.midi-run[run.length-2].midi);
         if(Math.sign(dpitch)!==prevDir) break;
       }
-      const hasOnset=onsets.some(o=>{const t=(o-recordingStart)/1000; return t>prev.start&&t<cur.start;});
-      if(hasOnset) break;
+      if(hasOnsetBetween(prev,cur)) break;
       run.push(cur); j++;
     }
     if(run.length>=3||(run.length===2&&Math.abs(run[run.length-1].midi-run[0].midi)>=2)){
@@ -273,16 +310,6 @@ function analyzeGlides(){
     i=j;
   }
   notes=merged;
-  notes.forEach((n,idx)=>{
-    const nextStart=idx+1<notes.length?notes[idx+1].start:(pitchTrail.length?pitchTrail[pitchTrail.length-1].t:n.start+n.dur);
-    const seg=pitchTrail.filter(p=>p.t>=n.start&&p.t<nextStart);
-    if(seg.length<5) return;
-    let maxDev=0;
-    seg.forEach(p=>{maxDev=Math.max(maxDev,Math.abs(p.midi-n.midi));});
-    const tail=seg.slice(Math.floor(seg.length*0.66));
-    const returns=tail.some(p=>Math.abs(p.midi-n.midi)<0.5);
-    if(maxDev>=1&&returns) n.bend=Math.round(maxDev);
-  });
 }
 function estimateTempo(){
   if(onsets.length<4){tempo=120; els.tempo.textContent=tempo; return;}
