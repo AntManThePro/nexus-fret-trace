@@ -353,11 +353,14 @@ function render(){
 }
 function drawFret(positions=[]){
   const w=fretC.width,h=fretC.height; fctx.clearRect(0,0,w,h); fctx.fillStyle='#050508'; fctx.fillRect(0,0,w,h);
-  const frets=15, left=36, right=w-16, top=16, bottom=h-16;
+  const frets=22, left=36, right=w-16, top=16, bottom=h-16;
   const sg=(bottom-top)/5, fg=(right-left)/frets;
   fctx.strokeStyle='#333'; for(let f=0;f<=frets;f++){const x=left+f*fg; fctx.beginPath(); fctx.moveTo(x,top-4); fctx.lineTo(x,bottom+4); fctx.stroke();}
   for(let s=0;s<6;s++){const y=top+s*sg; fctx.strokeStyle=s===0||s===5?'#00ff87':'#60efff'; fctx.lineWidth=s===0||s===5?2.2:1.4; fctx.beginPath(); fctx.moveTo(left-6,y); fctx.lineTo(right+4,y); fctx.stroke(); fctx.fillStyle='#ffcc00'; fctx.font='10px monospace'; fctx.fillText(STRING_NAMES[s],4,y+3);}
-  positions.forEach(p=>{if(p.fret>frets)return; const x=left+p.fret*fg+fg*0.5, y=top+p.string*sg; fctx.beginPath(); fctx.arc(x,y,8,0,Math.PI*2); fctx.fillStyle=p.fret===0?'#ffcc00':'#ff0080'; fctx.fill(); fctx.fillStyle='#fff'; fctx.font='bold 10px monospace'; fctx.textAlign='center'; fctx.fillText(p.fret,x,y+3); fctx.textAlign='left';});
+  fctx.fillStyle='#666'; fctx.font='9px monospace'; fctx.textAlign='center';
+  [3,5,7,9,12,15,17,19,21].forEach(f=>{fctx.fillText(String(f),left+f*fg,bottom+13);});
+  fctx.textAlign='left';
+  positions.forEach(p=>{if(p.fret>frets)return; const x=left+p.fret*fg+fg*0.5, y=top+p.string*sg; fctx.beginPath(); fctx.arc(x,y,6,0,Math.PI*2); fctx.fillStyle=p.fret===0?'#ffcc00':'#ff0080'; fctx.fill(); fctx.fillStyle='#fff'; fctx.font='bold 9px monospace'; fctx.textAlign='center'; fctx.fillText(p.fret,x,y+3); fctx.textAlign='left';});
 }
 function drawTimeline(){
   const w=timeC.width,h=timeC.height; tctx.clearRect(0,0,w,h); tctx.fillStyle='#050508'; tctx.fillRect(0,0,w,h);
