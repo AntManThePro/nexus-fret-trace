@@ -4,8 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>NEXUS · FRET TRACE</title>
-<link rel="icon" href="icon-192.png" type="image/png">
-<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icons/favicon.ico" sizes="any">
+<link rel="icon" href="icons/favicon-192.png" type="image/png" sizes="192x192">
+<link rel="icon" href="icons/favicon-512.png" type="image/png" sizes="512x512">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" sizes="180x180">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="FRET TRACE">
 <style>
@@ -109,6 +111,7 @@ canvas{display:block;background:#050508;border:1px solid #222;border-radius:6px;
   </div>
   <div class="tab-display" id="tabOutput">Ready. Record a clear single-note line. Quantize. Edit on the timeline. Lock position. Export MIDI or tab.</div>
   <p class="note-hint">Monophonic: it tracks the strongest single pitch, best on clear leads and solos. The ROOT box is just that note's root, not a detected chord — a real chord needs more than one pitch at once. Transpose shifts live input and captured notes. Capo now applies to tab, playback, and MIDI. Your last capture is saved on this device and restored on reload. TEST needs no file download: it plays E2 A2 D3 G3 B3 E4 G3 E2 inside the app and captures them, so the tab should read that order. B/S TEST plays a slide A2 to D3, then a D3 bend up about 3 semitones and back. In the tab, a note ending in s was slid into, and a note ending in b was bent — slide means a smooth glide with no new attack in between, bend means the pitch rose and returned to the same note.</p>
+  <footer style="margin-top:18px;padding-top:10px;border-top:1px solid #222;font-size:11px;line-height:1.5;color:#888">Fret 22 exists. DoubleA counted them. Twice. <small>Fine print: the board draws all 22 frets now — notes above fret 15 used to vanish into the void, which is why your solo sounded shorter than you played it. Monophonic only: one note at a time, like a field tech with one ladder. Not perfect, just real.</small></footer>
 </div>
 <script>
 const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
